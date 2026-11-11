@@ -12,8 +12,8 @@ refs:
   - npm://@microsoft/dev-tunnels-management@1.3.61 - `tunnelRequestOptions.d.ts`: `tokenScopes` asks the service for access tokens, returned in `Tunnel.accessTokens`
   - https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/security - client access tokens and the `X-Tunnel-Authorization` header, page updated 2026-02-12
   - https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/cli-commands - `devtunnel token TUNNELID --scopes connect`, page updated 2026-02-12
-  - https://github.com/softov/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/kind.ts#L94-L102 - the `anonymous` operation on a devtunnel tunnel
-  - https://github.com/softov/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/service.ts#L320-L327 - ahpd's tunnel plugin already calls the Dev Tunnels management API
+  - https://github.com/ahpio/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/kind.ts#L94-L102 - the `anonymous` operation on a devtunnel tunnel
+  - https://github.com/ahpio/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/service.ts#L320-L327 - ahpd's tunnel plugin already calls the Dev Tunnels management API
 ---
 
 # ahpc connects through a private Dev Tunnel
@@ -36,8 +36,8 @@ Softov wants ahpc to reach an ahpd daemon through a Dev Tunnel port that is not 
 
 ## What ahpd has today
 
-- A devtunnel tunnel has an `anonymous` operation that turns anonymous access on or off ([kind.ts](https://github.com/softov/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/kind.ts#L94-L102)). This is what made ahpc connect.
-- ahpd's tunnel plugin calls the Dev Tunnels management API with the connector's GitHub token ([service.ts](https://github.com/softov/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/service.ts#L320-L327)). That API returns a connect token when a request names `tokenScopes`. No ahpd operation asks for one today.
+- A devtunnel tunnel has an `anonymous` operation that turns anonymous access on or off ([kind.ts](https://github.com/ahpio/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/kind.ts#L94-L102)). This is what made ahpc connect.
+- ahpd's tunnel plugin calls the Dev Tunnels management API with the connector's GitHub token ([service.ts](https://github.com/ahpio/ahpd/blob/8429bd2b/packages/tunnel-devtunnel/src/service.ts#L320-L327)). That API returns a connect token when a request names `tokenScopes`. No ahpd operation asks for one today.
 
 ## Who writes
 

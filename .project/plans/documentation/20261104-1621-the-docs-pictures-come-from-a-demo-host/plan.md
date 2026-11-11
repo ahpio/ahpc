@@ -11,7 +11,7 @@ requires:
   - cli/20261104-1621-automations-are-made-from-the-shell
 refs:
   - git://e8c5a80 - the commit the facts were checked at, and the last commit that holds briefs/doc-pictures-come-from-a-seeded-test-host.md
-  - https://github.com/softov/ahpd/tree/main/.project/plans/host/20261104-1619-a-demo-host-shows-every-subject - the ahpd plan for `examples/demo`, which this script starts
+  - https://github.com/ahpio/ahpd/tree/main/.project/plans/host/20261104-1619-a-demo-host-shows-every-subject - the ahpd plan for `examples/demo`, which this script starts
   - "[code://src/tui.tsx#L273-L345](../../../../src/tui.tsx#L273-L345) - `still`, which draws one frame of a screen to SVG"
   - "[code://docs/use/SCREEN.md#L20-L53](../../../../docs/use/SCREEN.md#L20-L53) - the three stills the site shows today, drawn from the scripted host"
   - "[code://docs/img/sessions.svg](../../../../docs/img/sessions.svg) - a still that names Softov's work projects, to be drawn again"

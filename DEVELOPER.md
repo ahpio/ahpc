@@ -45,7 +45,7 @@ npm install
 
 `npm run wire -- <capture>` checks a recording against the strict schema, and [`test/conformance.test.ts`](test/conformance.test.ts) runs the same check against frames the test run itself produced, so it cannot pass on a stale recording.
 
-`test/fixtures/resource-write.json` is shared with [`ahpd`](https://github.com/softov/ahpd) and has to stay identical: `resourceWrite` is symmetrical, and each repository's CI compares its copy against the other's `main`.
+`test/fixtures/resource-write.json` is shared with [`ahpd`](https://github.com/ahpio/ahpd) and has to stay identical: `resourceWrite` is symmetrical, and each repository's CI compares its copy against the other's `main`.
 Change it in both.
 
 ## Drawing the docs pictures

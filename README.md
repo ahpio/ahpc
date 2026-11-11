@@ -50,7 +50,7 @@ ahpc --host ws://127.0.0.1:9187
 ahpc session list --host ws://127.0.0.1:9187
 ```
 
-[`ahpd`](https://github.com/softov/ahpd) and VS Code's agent host are both AHP hosts.
+[`ahpd`](https://github.com/ahpio/ahpd) and VS Code's agent host are both AHP hosts.
 
 ## What it does
 
