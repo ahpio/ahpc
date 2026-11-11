@@ -9,7 +9,7 @@ requires:
   - ahpd host/20261104-2158-the-demo-offers-the-usual-fields
 refs:
   - git://98e3b14 - the commit of this repository the facts were checked at
-  - https://github.com/softov/ahpd/tree/main/.project/plans/host/20261104-2158-the-demo-offers-the-usual-fields - the ahpd plan that gives the demo its name and its fields
+  - https://github.com/ahpio/ahpd/tree/main/.project/plans/host/20261104-2158-the-demo-offers-the-usual-fields - the ahpd plan that gives the demo its name and its fields
   - "[code://docs/use/NEW-SESSION.md](../../../../docs/use/NEW-SESSION.md) - the fields, `/`, and the agents"
   - "[code://docs/use/SESSION.md](../../../../docs/use/SESSION.md) - approving a tool call, with no picture of it"
   - "[code://docs/subjects/CUSTOMIZATIONS.md](../../../../docs/subjects/CUSTOMIZATIONS.md) - one picture today"
@@ -17,7 +17,7 @@ refs:
   - "[code://src/screens.tsx#L1104-L1120](../../../../src/screens.tsx#L1104-L1120) - the composer, its `DRAFT` value and its slash commands"
   - "[code://tools/pictures.mjs](../../../../tools/pictures.mjs) - the picture script"
   - "[code://docs/.vitepress/config.mts#L157](../../../../docs/.vitepress/config.mts#L157) - `themeConfig`, with no logo"
-  - https://github.com/softov/ahpd/blob/main/docs/public/logo.svg - ahpd's logo, the four dots ahpc's screen already draws
+  - https://github.com/ahpio/ahpd/blob/main/docs/public/logo.svg - ahpd's logo, the four dots ahpc's screen already draws
 ---
 
 ## Goal

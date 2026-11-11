@@ -6,7 +6,7 @@ refs:
   - code://.project/ideas/deliberate-duplication.md - the idea this restates, the first instance
   - git://aa7b91e - the fixture diffed against ahpd's copy on CI
   - code://src/ahp/publish.ts#L162 - the comment that names the other copy
-  - https://github.com/softov/ahpd - the host, whose SDK this client does not depend on
+  - https://github.com/ahpio/ahpd - the host, whose SDK this client does not depend on
 ---
 
 ## Context

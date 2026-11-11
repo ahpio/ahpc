@@ -18,7 +18,7 @@ refs:
   - "[code://src/cli/main.ts#L232-L255](../../../../src/cli/main.ts#L232-L255) - `where()`, which reads `--cwd` and the config file"
   - "[code://src/tui.tsx#L219](../../../../src/tui.tsx#L219) - the screen's `--path`"
   - "[code://test/reconnect.test.ts#L1576-L1631](../../../../test/reconnect.test.ts#L1576-L1631) - the test that a token is sent on every connection, the template for the trust tests"
-  - https://github.com/softov/ahpd - ahpd 0.10.0 reads `workspaceTrust` from `root/configChanged`, the way VS Code sends it
+  - https://github.com/ahpio/ahpd - ahpd 0.10.0 reads `workspaceTrust` from `root/configChanged`, the way VS Code sends it
 ---
 
 ## Goal

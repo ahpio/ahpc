@@ -9,7 +9,7 @@ requires:
   - ahpd host/20261104-1956-the-demo-shell-runs-under-a-pty
 refs:
   - git://23a6b0c - the commit of this repository the facts were checked at
-  - https://github.com/softov/ahpd/tree/main/.project/plans/host/20261104-1956-the-demo-shell-runs-under-a-pty - the ahpd plan that gives the demo's shells a prompt
+  - https://github.com/ahpio/ahpd/tree/main/.project/plans/host/20261104-1956-the-demo-shell-runs-under-a-pty - the ahpd plan that gives the demo's shells a prompt
   - "[code://docs/use/SCREEN.md](../../../../docs/use/SCREEN.md) - one page for starting, the session list, a session, a new session and the keys"
   - "[code://docs/subjects/SESSIONS.md](../../../../docs/subjects/SESSIONS.md) - the session list's own page, with its picture"
   - "[code://docs/.vitepress/config.mts#L34-L37](../../../../docs/.vitepress/config.mts#L34-L37) - the *Use* sidebar"

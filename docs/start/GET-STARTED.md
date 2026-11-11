@@ -1,6 +1,6 @@
 # Get started
 
-ahpc is a client. It does not run agents or models. It connects to an AHP host, such as [ahpd](https://github.com/softov/ahpd) or VS Code's agent host, and drives the sessions there.
+ahpc is a client. It does not run agents or models. It connects to an AHP host, such as [ahpd](https://github.com/ahpio/ahpd) or VS Code's agent host, and drives the sessions there.
 
 ## Install
 

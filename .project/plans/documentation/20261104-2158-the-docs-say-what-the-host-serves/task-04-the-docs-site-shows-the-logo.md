@@ -6,7 +6,7 @@ layer: "docs"
 refs:
   - "[code://docs/.vitepress/config.mts#L157](../../../../docs/.vitepress/config.mts#L157) - `themeConfig`"
   - "[code://docs/index.md](../../../../docs/index.md) - the home page hero"
-  - https://github.com/softov/ahpd/blob/main/docs/public/logo.svg - the file to copy
+  - https://github.com/ahpio/ahpd/blob/main/docs/public/logo.svg - the file to copy
 ---
 
 ## Objective

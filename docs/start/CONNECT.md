@@ -36,14 +36,14 @@ ahpc --host ws://127.0.0.1:9187 --connection-token-file ~/.config/ahpd/connectio
 
 ## A host on another machine
 
-The host must listen on the network and have a token. For ahpd, see [Remote access](https://softov.github.io/ahpd/server/REMOTE) in its docs. Then:
+The host must listen on the network and have a token. For ahpd, see [Remote access](https://ahpio.github.io/ahpd/server/REMOTE) in its docs. Then:
 
 ```sh
 ahpc --host ws://203.0.113.5:9187 --token <token>
 ahpc --host wss://ahpd.example.com --token <token>
 ```
 
-ahpd can give each person their own token. See [Users](https://softov.github.io/ahpd/server/USERS) in its docs.
+ahpd can give each person their own token. See [Users](https://ahpio.github.io/ahpd/server/USERS) in its docs.
 
 ## Protected resources
 
