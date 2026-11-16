@@ -231,6 +231,12 @@
        "$ref": "#/$defs/ChatIsArchivedChangedAction"
       },
       {
+       "$ref": "#/$defs/ChatConfigChangedAction"
+      },
+      {
+       "$ref": "#/$defs/ChatMovedAction"
+      },
+      {
        "$ref": "#/$defs/ChatInputRequestedAction"
       },
       {
@@ -435,6 +441,8 @@
     "chat/draftChanged",
     "chat/isReadChanged",
     "chat/isArchivedChanged",
+    "chat/configChanged",
+    "chat/moved",
     "chat/inputRequested",
     "chat/inputAnswerChanged",
     "chat/inputCompleted",
@@ -697,7 +705,8 @@
     -32008,
     -32009,
     -32010,
-    -32011
+    -32011,
+    -32012
    ]
   },
   "AhpErrorCodeWithData": {
@@ -916,6 +925,23 @@
         "message"
        ],
        "additionalProperties": false
+      },
+      {
+       "type": "object",
+       "properties": {
+        "code": {
+         "const": -32012
+        },
+        "message": {
+         "type": "string"
+        },
+        "data": true
+       },
+       "required": [
+        "code",
+        "message"
+       ],
+       "additionalProperties": false
       }
      ]
     }
@@ -974,6 +1000,46 @@
        "const": "2.0"
       },
       "method": {
+       "const": "channel/credit"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelCreditParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/reset"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpResetParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
        "const": "unsubscribe"
       },
       "params": {
@@ -998,6 +1064,166 @@
       },
       "params": {
        "$ref": "#/$defs/DispatchActionParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/frame"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelFrameParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/data"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpDataParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/eof"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpEofParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/credit"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelCreditParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/reset"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpResetParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/frame"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelFrameParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/data"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpDataParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/eof"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpEofParams"
       }
      },
      "required": [
@@ -1178,6 +1404,26 @@
       },
       "params": {
        "$ref": "#/$defs/OtlpExportMetricsParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/snapshot"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelSnapshotParams"
       }
      },
      "required": [
@@ -1480,6 +1726,12 @@
       "type": "string"
      }
     },
+    "target": {
+     "$ref": "#/$defs/McpServerAuthenticateTarget"
+    },
+    "accountId": {
+     "type": "string"
+    },
     "_meta": {
      "type": "object",
      "additionalProperties": true
@@ -1496,6 +1748,29 @@
    "type": "object",
    "properties": {},
    "additionalProperties": false
+  },
+  "AuthenticateTarget": {
+   "type": "object",
+   "properties": {
+    "kind": {
+     "const": "mcpServer"
+    },
+    "session": {
+     "type": "string"
+    },
+    "customizationId": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "kind",
+    "session",
+    "customizationId"
+   ],
+   "additionalProperties": false
+  },
+  "AuthenticateTargetKind": {
+   "const": "mcpServer"
   },
   "AuthRequiredErrorData": {
    "type": "object",
@@ -2732,7 +3007,7 @@
     "status": {
      "type": "string"
     },
-    "url": {
+    "uri": {
      "type": "string"
     }
    },
@@ -2878,6 +3153,12 @@
     "_meta": {
      "type": "object",
      "additionalProperties": true
+    },
+    "nonce": {
+     "type": "string"
+    },
+    "status": {
+     "const": 1
     }
    },
    "required": [
@@ -2940,6 +3221,9 @@
     "reviewed"
    ],
    "additionalProperties": false
+  },
+  "ChangesetFileStatus": {
+   "const": 1
   },
   "ChangesetOperation": {
    "type": "object",
@@ -3103,6 +3387,9 @@
         "before",
         "after"
        ]
+      },
+      "nonce": {
+       "type": "string"
       }
      },
      "required": [
@@ -3128,6 +3415,9 @@
       },
       "range": {
        "$ref": "#/$defs/TextRange"
+      },
+      "nonce": {
+       "type": "string"
       }
      },
      "required": [
@@ -3225,6 +3515,145 @@
    },
    "additionalProperties": false
   },
+  "ChannelCreditParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "consumedBytes": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "channel",
+    "consumedBytes"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelDeliveryResumeOptions": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/ChannelDeliveryResumeParams"
+     }
+    }
+   },
+   "required": [
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelDeliveryResumeParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "flowControl": {
+     "$ref": "#/$defs/SubscriptionFlowControlOptions"
+    },
+    "lastAppliedServerSeq": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "channel",
+    "flowControl"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelDeliveryResumeResult": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/ResumedChannelSubscription"
+     }
+    }
+   },
+   "required": [
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelFlowControl": {
+   "type": "object",
+   "properties": {
+    "clientReceive": {
+     "$ref": "#/$defs/ChannelReceiveLimits"
+    },
+    "hostReceive": {
+     "$ref": "#/$defs/ChannelReceiveLimits"
+    }
+   },
+   "required": [
+    "clientReceive",
+    "hostReceive"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelFrameParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "data": {
+     "type": "string"
+    },
+    "final": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "channel",
+    "data"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelReceiveLimits": {
+   "type": "object",
+   "properties": {
+    "windowBytes": {
+     "type": "number"
+    },
+    "maxFrameBytes": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "windowBytes",
+    "maxFrameBytes"
+   ],
+   "additionalProperties": false
+  },
+  "ChannelRecoveryKind": {
+   "enum": [
+    "snapshot",
+    "replay",
+    "live"
+   ]
+  },
+  "ChannelSnapshotParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "snapshot": {
+     "$ref": "#/$defs/Snapshot"
+    }
+   },
+   "required": [
+    "channel",
+    "snapshot"
+   ],
+   "additionalProperties": false
+  },
   "ChatActivityChangedAction": {
    "type": "object",
    "properties": {
@@ -3315,6 +3744,42 @@
    },
    "required": [
     "type"
+   ],
+   "additionalProperties": false
+  },
+  "ChatConfigChangedAction": {
+   "type": "object",
+   "properties": {
+    "type": {
+     "const": "chat/configChanged"
+    },
+    "config": {
+     "type": "object",
+     "additionalProperties": true
+    },
+    "replace": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "type",
+    "config"
+   ],
+   "additionalProperties": false
+  },
+  "ChatConfigState": {
+   "type": "object",
+   "properties": {
+    "schema": {
+     "$ref": "#/$defs/SessionConfigSchema"
+    },
+    "values": {
+     "type": "object",
+     "additionalProperties": true
+    }
+   },
+   "required": [
+    "values"
    ],
    "additionalProperties": false
   },
@@ -4020,6 +4485,28 @@
    ],
    "additionalProperties": false
   },
+  "ChatMovedAction": {
+   "type": "object",
+   "properties": {
+    "type": {
+     "const": "chat/moved"
+    },
+    "session": {
+     "type": "string"
+    },
+    "provider": {
+     "type": "string"
+    },
+    "schema": {
+     "$ref": "#/$defs/SessionConfigSchema"
+    }
+   },
+   "required": [
+    "type",
+    "session"
+   ],
+   "additionalProperties": false
+  },
   "ChatMoveDestination": {
    "discriminator": {
     "propertyName": "kind"
@@ -4244,6 +4731,12 @@
     "content": {
      "type": "string"
     },
+    "startedAt": {
+     "type": "string"
+    },
+    "duration": {
+     "type": "number"
+    },
     "_meta": {
      "type": "object",
      "additionalProperties": true
@@ -4445,6 +4938,9 @@
       "hidden"
      ]
     },
+    "provider": {
+     "type": "string"
+    },
     "workingDirectories": {
      "type": "array",
      "items": {
@@ -4478,6 +4974,9 @@
      "items": {
       "$ref": "#/$defs/CanvasReference"
      }
+    },
+    "config": {
+     "$ref": "#/$defs/ChatConfigState"
     },
     "turns": {
      "type": "array",
@@ -4636,6 +5135,9 @@
       "read-only",
       "hidden"
      ]
+    },
+    "provider": {
+     "type": "string"
     },
     "workingDirectories": {
      "type": "array",
@@ -5546,6 +6048,9 @@
      "$ref": "#/$defs/ChatIsArchivedChangedAction"
     },
     {
+     "$ref": "#/$defs/ChatConfigChangedAction"
+    },
+    {
      "$ref": "#/$defs/ChatInputAnswerChangedAction"
     },
     {
@@ -5582,11 +6087,76 @@
       "params"
      ],
      "additionalProperties": false
+    },
+    "channel/frame": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/ChannelFrameParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "channel/credit": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/ChannelCreditParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "tcp/data": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/TcpDataParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "tcp/eof": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/TcpEofParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "tcp/reset": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/TcpResetParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
     }
    },
    "required": [
     "unsubscribe",
-    "dispatchAction"
+    "dispatchAction",
+    "channel/frame",
+    "channel/credit",
+    "tcp/data",
+    "tcp/eof",
+    "tcp/reset"
    ],
    "additionalProperties": false
   },
@@ -6024,6 +6594,22 @@
      ],
      "additionalProperties": false
     },
+    "createTcpConnection": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/CreateTcpConnectionParams"
+      },
+      "result": {
+       "$ref": "#/$defs/CreateTcpConnectionResult"
+      }
+     },
+     "required": [
+      "params",
+      "result"
+     ],
+     "additionalProperties": false
+    },
     "moveChat": {
      "type": "object",
      "properties": {
@@ -6417,6 +7003,7 @@
     "createSession",
     "disposeSession",
     "createChat",
+    "createTcpConnection",
     "moveChat",
     "disposeChat",
     "createTerminal",
@@ -6733,6 +7320,12 @@
       "type": "string"
      }
     },
+    "title": {
+     "type": "string"
+    },
+    "provider": {
+     "type": "string"
+    },
     "_meta": {
      "type": "object",
      "additionalProperties": true
@@ -6842,6 +7435,35 @@
    "required": [
     "channel"
    ],
+   "additionalProperties": false
+  },
+  "CreateTcpConnectionParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "host": {
+     "type": "string"
+    },
+    "port": {
+     "type": "number"
+    },
+    "_meta": {
+     "type": "object",
+     "additionalProperties": true
+    }
+   },
+   "required": [
+    "channel",
+    "host",
+    "port"
+   ],
+   "additionalProperties": false
+  },
+  "CreateTcpConnectionResult": {
+   "type": "object",
+   "properties": {},
    "additionalProperties": false
   },
   "CreateTerminalParams": {
@@ -7420,6 +8042,12 @@
        "$ref": "#/$defs/ChatIsArchivedChangedAction"
       },
       {
+       "$ref": "#/$defs/ChatConfigChangedAction"
+      },
+      {
+       "$ref": "#/$defs/ChatMovedAction"
+      },
+      {
        "$ref": "#/$defs/ChatInputRequestedAction"
       },
       {
@@ -7592,6 +8220,10 @@
    "required": [
     "channel"
    ],
+   "additionalProperties": false
+  },
+  "EmptyState": {
+   "type": "object",
    "additionalProperties": false
   },
   "ErrorInfo": {
@@ -7806,6 +8438,18 @@
    ],
    "additionalProperties": false
   },
+  "HostEnvironment": {
+   "type": "object",
+   "properties": {
+    "pathStyle": {
+     "enum": [
+      "posix",
+      "windows"
+     ]
+    }
+   },
+   "additionalProperties": false
+  },
   "Icon": {
    "type": "object",
    "properties": {
@@ -7915,6 +8559,9 @@
       "$ref": "#/$defs/Snapshot"
      }
     },
+    "environment": {
+     "$ref": "#/$defs/HostEnvironment"
+    },
     "defaultDirectory": {
      "type": "string"
     },
@@ -7932,6 +8579,12 @@
     },
     "automations": {
      "$ref": "#/$defs/AutomationCapabilities"
+    },
+    "tcpConnections": {
+     "$ref": "#/$defs/TcpConnectionsCapability"
+    },
+    "multipleChatProviders": {
+     "$ref": "#/$defs/MultipleChatProvidersCapability"
     }
    },
    "required": [
@@ -7992,6 +8645,9 @@
           "before",
           "after"
          ]
+        },
+        "nonce": {
+         "type": "string"
         }
        },
        "required": [
@@ -8017,6 +8673,9 @@
         },
         "range": {
          "$ref": "#/$defs/TextRange"
+        },
+        "nonce": {
+         "type": "string"
         }
        },
        "required": [
@@ -8353,6 +9012,26 @@
    ],
    "additionalProperties": false
   },
+  "McpServerAuthenticateTarget": {
+   "type": "object",
+   "properties": {
+    "kind": {
+     "const": "mcpServer"
+    },
+    "session": {
+     "type": "string"
+    },
+    "customizationId": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "kind",
+    "session",
+    "customizationId"
+   ],
+   "additionalProperties": false
+  },
   "McpServerAuthRequiredState": {
    "type": "object",
    "properties": {
@@ -8484,6 +9163,12 @@
     },
     "mcpApp": {
      "$ref": "#/$defs/McpServerCustomizationApps"
+    },
+    "children": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/SkillCustomization"
+     }
     },
     "id": {
      "type": "string"
@@ -8970,6 +9655,11 @@
    ],
    "additionalProperties": false
   },
+  "MultipleChatProvidersCapability": {
+   "type": "object",
+   "properties": {},
+   "additionalProperties": false
+  },
   "MultipleChatsCapability": {
    "type": "object",
    "properties": {
@@ -9186,6 +9876,9 @@
       "hidden"
      ]
     },
+    "provider": {
+     "type": "string"
+    },
     "workingDirectories": {
      "type": "array",
      "items": {
@@ -9195,11 +9888,23 @@
    },
    "additionalProperties": false
   },
+  "PathStyle": {
+   "enum": [
+    "posix",
+    "windows"
+   ]
+  },
   "PendingMessage": {
    "type": "object",
    "properties": {
     "id": {
      "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "steering",
+      "queued"
+     ]
     },
     "message": {
      "$ref": "#/$defs/Message"
@@ -9552,6 +10257,46 @@
        "const": "2.0"
       },
       "method": {
+       "const": "channel/credit"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelCreditParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/reset"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpResetParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
        "const": "unsubscribe"
       },
       "params": {
@@ -9576,6 +10321,166 @@
       },
       "params": {
        "$ref": "#/$defs/DispatchActionParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/frame"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelFrameParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/data"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpDataParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/eof"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpEofParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/credit"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelCreditParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/reset"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpResetParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "channel/frame"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelFrameParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/data"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpDataParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "method": {
+       "const": "tcp/eof"
+      },
+      "params": {
+       "$ref": "#/$defs/TcpEofParams"
       }
      },
      "required": [
@@ -9771,6 +10676,26 @@
       "jsonrpc": {
        "const": "2.0"
       },
+      "method": {
+       "const": "channel/snapshot"
+      },
+      "params": {
+       "$ref": "#/$defs/ChannelSnapshotParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
       "id": {
        "type": "number"
       },
@@ -9923,6 +10848,30 @@
       },
       "params": {
        "$ref": "#/$defs/CreateChatParams"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "id",
+      "method",
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "id": {
+       "type": "number"
+      },
+      "method": {
+       "const": "createTcpConnection"
+      },
+      "params": {
+       "$ref": "#/$defs/CreateTcpConnectionParams"
       }
      },
      "required": [
@@ -10909,6 +11858,26 @@
        "type": "number"
       },
       "result": {
+       "$ref": "#/$defs/CreateTcpConnectionResult"
+      }
+     },
+     "required": [
+      "jsonrpc",
+      "id",
+      "result"
+     ],
+     "additionalProperties": false
+    },
+    {
+     "type": "object",
+     "properties": {
+      "jsonrpc": {
+       "const": "2.0"
+      },
+      "id": {
+       "type": "number"
+      },
+      "result": {
        "$ref": "#/$defs/MoveChatResult"
       }
      },
@@ -11583,6 +12552,11 @@
   },
   "ProtocolNotificationMethod": {
    "enum": [
+    "channel/credit",
+    "tcp/reset",
+    "channel/frame",
+    "tcp/data",
+    "tcp/eof",
     "root/sessionAdded",
     "root/sessionRemoved",
     "root/sessionSummaryChanged",
@@ -11590,7 +12564,8 @@
     "auth/required",
     "otlp/exportLogs",
     "otlp/exportTraces",
-    "otlp/exportMetrics"
+    "otlp/exportMetrics",
+    "channel/snapshot"
    ]
   },
   "ReasoningResponsePart": {
@@ -11604,6 +12579,12 @@
     },
     "content": {
      "type": "string"
+    },
+    "startedAt": {
+     "type": "string"
+    },
+    "duration": {
+     "type": "number"
     }
    },
    "required": [
@@ -11630,6 +12611,9 @@
      "items": {
       "type": "string"
      }
+    },
+    "windows": {
+     "$ref": "#/$defs/ChannelDeliveryResumeOptions"
     },
     "_meta": {
      "type": "object",
@@ -11661,6 +12645,9 @@
      "items": {
       "type": "string"
      }
+    },
+    "windows": {
+     "$ref": "#/$defs/ChannelDeliveryResumeResult"
     }
    },
    "required": [
@@ -11700,6 +12687,9 @@
      "items": {
       "$ref": "#/$defs/Snapshot"
      }
+    },
+    "windows": {
+     "$ref": "#/$defs/ChannelDeliveryResumeResult"
     }
    },
    "required": [
@@ -11945,6 +12935,12 @@
       "utf-8"
      ]
     },
+    "position": {
+     "type": "number"
+    },
+    "length": {
+     "type": "number"
+    },
     "_meta": {
      "type": "object",
      "additionalProperties": true
@@ -11970,6 +12966,9 @@
     },
     "contentType": {
      "type": "string"
+    },
+    "size": {
+     "type": "number"
     }
    },
    "required": [
@@ -12301,6 +13300,30 @@
     "inputRequest",
     "error"
    ]
+  },
+  "ResumedChannelSubscription": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "flowControl": {
+     "$ref": "#/$defs/ChannelFlowControl"
+    },
+    "recovery": {
+     "enum": [
+      "snapshot",
+      "replay",
+      "live"
+     ]
+    }
+   },
+   "required": [
+    "channel",
+    "flowControl",
+    "recovery"
+   ],
+   "additionalProperties": false
   },
   "RootAction": {
    "discriminator": {
@@ -12668,6 +13691,9 @@
      "$ref": "#/$defs/ChatReasoningAction"
     },
     {
+     "$ref": "#/$defs/ChatMovedAction"
+    },
+    {
      "$ref": "#/$defs/ChatInputRequestedAction"
     },
     {
@@ -12963,6 +13989,78 @@
       "params"
      ],
      "additionalProperties": false
+    },
+    "channel/frame": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/ChannelFrameParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "channel/credit": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/ChannelCreditParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "tcp/data": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/TcpDataParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "tcp/eof": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/TcpEofParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "tcp/reset": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/TcpResetParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
+    },
+    "channel/snapshot": {
+     "type": "object",
+     "properties": {
+      "params": {
+       "$ref": "#/$defs/ChannelSnapshotParams"
+      }
+     },
+     "required": [
+      "params"
+     ],
+     "additionalProperties": false
     }
    },
    "required": [
@@ -12974,7 +14072,13 @@
     "auth/required",
     "otlp/exportLogs",
     "otlp/exportTraces",
-    "otlp/exportMetrics"
+    "otlp/exportMetrics",
+    "channel/frame",
+    "channel/credit",
+    "tcp/data",
+    "tcp/eof",
+    "tcp/reset",
+    "channel/snapshot"
    ],
    "additionalProperties": false
   },
@@ -13484,6 +14588,9 @@
       "hidden"
      ]
     },
+    "provider": {
+     "type": "string"
+    },
     "status": {
      "enum": [
       1,
@@ -13599,6 +14706,9 @@
      "type": "boolean"
     },
     "sessionMutable": {
+     "type": "boolean"
+    },
+    "chatMutable": {
      "type": "boolean"
     },
     "type": {
@@ -14235,6 +15345,9 @@
     "_meta": {
      "type": "object",
      "additionalProperties": true
+    },
+    "vendor": {
+     "type": "string"
     }
    },
    "required": [
@@ -14869,6 +15982,10 @@
       },
       {
        "$ref": "#/$defs/AutomationRunState"
+      },
+      {
+       "type": "object",
+       "additionalProperties": false
       }
      ]
     },
@@ -15106,6 +16223,12 @@
      "$ref": "#/$defs/ChatIsArchivedChangedAction"
     },
     {
+     "$ref": "#/$defs/ChatConfigChangedAction"
+    },
+    {
+     "$ref": "#/$defs/ChatMovedAction"
+    },
+    {
      "$ref": "#/$defs/ChatInputRequestedAction"
     },
     {
@@ -15252,6 +16375,9 @@
     "view": {
      "$ref": "#/$defs/SubscribeView"
     },
+    "flowControl": {
+     "$ref": "#/$defs/SubscriptionFlowControlOptions"
+    },
     "channel": {
      "type": "string"
     },
@@ -15270,6 +16396,9 @@
    "properties": {
     "snapshot": {
      "$ref": "#/$defs/Snapshot"
+    },
+    "flowControl": {
+     "$ref": "#/$defs/ChannelFlowControl"
     }
    },
    "additionalProperties": false
@@ -15290,6 +16419,18 @@
      "type": "number"
     }
    },
+   "additionalProperties": false
+  },
+  "SubscriptionFlowControlOptions": {
+   "type": "object",
+   "properties": {
+    "receive": {
+     "$ref": "#/$defs/ChannelReceiveLimits"
+    }
+   },
+   "required": [
+    "receive"
+   ],
    "additionalProperties": false
   },
   "SystemNotificationResponsePart": {
@@ -15325,6 +16466,51 @@
    "required": [
     "kind",
     "content"
+   ],
+   "additionalProperties": false
+  },
+  "TcpConnectionsCapability": {
+   "type": "object",
+   "properties": {},
+   "additionalProperties": false
+  },
+  "TcpDataParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "data": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "channel",
+    "data"
+   ],
+   "additionalProperties": false
+  },
+  "TcpEofParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "channel"
+   ],
+   "additionalProperties": false
+  },
+  "TcpResetParams": {
+   "type": "object",
+   "properties": {
+    "channel": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "channel"
    ],
    "additionalProperties": false
   },
@@ -16304,6 +17490,10 @@
      "type": "object",
      "additionalProperties": true
     },
+    "resultMetadata": {
+     "type": "object",
+     "additionalProperties": true
+    },
     "error": {
      "type": "object",
      "properties": {
@@ -16646,6 +17836,10 @@
      "type": "object",
      "additionalProperties": true
     },
+    "resultMetadata": {
+     "type": "object",
+     "additionalProperties": true
+    },
     "error": {
      "type": "object",
      "properties": {
@@ -16779,6 +17973,10 @@
      }
     },
     "structuredContent": {
+     "type": "object",
+     "additionalProperties": true
+    },
+    "resultMetadata": {
      "type": "object",
      "additionalProperties": true
     },
@@ -17484,6 +18682,13 @@
     }
    },
    "additionalProperties": false
+  },
+  "WindowExemptMethod": {
+   "enum": [
+    "channel/credit",
+    "tcp/reset",
+    "unsubscribe"
+   ]
   }
  }
 }

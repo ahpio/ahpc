@@ -5,7 +5,7 @@
 [![docs](https://img.shields.io/badge/docs-ahpio.github.io%2Fahpc-1f6feb)](https://ahpio.github.io/ahpc/)
 ![license MIT](https://img.shields.io/badge/license-MIT-blue)
 ![node >=22](https://img.shields.io/badge/node-%3E%3D22-5fa04e)
-![Agent Host Protocol 1.0.0](https://img.shields.io/badge/AHP-1.0.0-0b7285)
+![Agent Host Protocol 1.1.0](https://img.shields.io/badge/AHP-1.1.0-0b7285)
 ![built with TextUI](https://img.shields.io/badge/built%20with-TextUI-7048e8)
 
 A terminal client for the [Agent Host Protocol](https://microsoft.github.io/agent-host-protocol/).

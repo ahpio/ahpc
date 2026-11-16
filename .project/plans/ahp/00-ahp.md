@@ -11,7 +11,7 @@ Everything above it - `src/control.ts`, `src/screens.tsx`, `src/cli/` - reaches 
 ## Packages
 
 - `code://src` - one package, `@softov/ahpc`; the wire is not a package of its own and `src/ahp/` is its whole surface.
-- `npm://@microsoft/agent-host-protocol@^0.9.0` - the protocol client, its reducers and its `Mirror`, loaded lazily so the suite runs with it absent.
+- `npm://@microsoft/agent-host-protocol@^1.1.0` - the protocol client, its reducers and its `Mirror`, loaded lazily so the suite runs with it absent.
 
 ## Contracts
 

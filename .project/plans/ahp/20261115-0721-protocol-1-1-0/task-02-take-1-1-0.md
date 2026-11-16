@@ -1,6 +1,6 @@
 ---
 title: Take 1.1.0 and offer it first
-status: todo
+status: done
 depends:
   - task-01-a-steering-message-is-not-queued.md
 layer: "ahp"
