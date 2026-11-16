@@ -60,6 +60,7 @@ Reference: [00-ahp.md](ahp/00-ahp.md)
 | [20261104-0734 - A command a host refuses names the variable that would let it through](ahp/20261104-0734-a-refused-command-names-the-variable/plan.md) | medium | built 2026-11-04 ([implemented.md](ahp/20261104-0734-a-refused-command-names-the-variable/implemented.md)) | ahp/20261104-0734-the-resource-token-has-its-own-flag | - |
 | [20261104-0734 - The comments on a refused act agree with the spec, and a retry is tested](ahp/20261104-0734-the-retry-comments-agree-with-the-spec/plan.md) | medium | built 2026-11-04 ([implemented.md](ahp/20261104-0734-the-retry-comments-agree-with-the-spec/implemented.md)) | ahp/20261104-0734-a-refused-command-names-the-variable | - |
 | [20261104-0734 - The sign-in prompt answers the ask it was opened for, sends once, and settles on close](ahp/20261104-0734-the-sign-in-prompt-settles-its-edges/plan.md) | medium | built 2026-11-04 ([implemented.md](ahp/20261104-0734-the-sign-in-prompt-settles-its-edges/implemented.md)) | ahp/20261104-0734-the-retry-comments-agree-with-the-spec | - |
+| [20261115-0721 - ahpc speaks protocol 1.1.0](ahp/20261115-0721-protocol-1-1-0/plan.md) | high | draft | ahp/05, ahp/08 | - |
 
 Next free number in `ahp`: `09`.
 
