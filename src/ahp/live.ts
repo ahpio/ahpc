@@ -38,7 +38,7 @@ import { SessionFlag } from './types.js';
  * npm install @microsoft/agent-host-protocol
  * ```
  *
- * Written against protocol 1.0.0, from the package's own `src/types/`. What it
+ * Written against protocol 1.1.0, from the package's own `src/types/`. What it
  * speaks is the subset this client needs: `initialize`, `listSessions`,
  * `subscribe`, `createSession`, `disposeSession`, `resolveSessionConfig`, and
  * the seven client-dispatchable actions that drive and answer a turn.
@@ -210,22 +210,20 @@ function isRpcRefusal(error: unknown): boolean {
  * Versions to offer at `initialize`, most preferred first.
  *
  * A host picks the highest entry it also speaks, so this is a preference
- * rather than a floor. `1.0.0` is the newest published and the version the
- * package below is built from; the three published ones behind it are what an
- * older host answers with, and every command used here is stable across all
- * of them.
+ * rather than a floor. `1.1.0` is the newest published and the version the
+ * package below is built from; the published ones behind it are what an older
+ * host answers with, and every command used here is stable across all of them.
  *
- * `1.0.0` was offered for two weeks and then withdrawn, and is back for a
- * better reason. The first one was never published: VS Code's host vendors
- * the protocol from its repository and carried a `1.0.0` that had not reached
- * the repository's `main`, so offering a version the installed types did not
- * describe was the wrong kind of forward-compatibility. `1.0.0` is published
- * now and the package is built from it, so the types and the offer agree.
+ * What `1.1.0` adds is not drawn yet - a chat's own config, `chat/moved` with
+ * a chat's own provider, a model's vendor, timing on a reasoning part, the
+ * host's path style. Its windowed delivery and TCP channel are experimental
+ * and offered per subscription, and none is offered here. The one change that
+ * reaches the screen is a steering message kept in `queuedMessages`, which
+ * `queued()` leaves out. Nothing sent here changes, so answering at `1.1.0`
+ * costs a host nothing.
  *
- * What `1.0.0` adds is not drawn yet - a chat's own read and archived bits,
- * `moveChat`, background work. None of it changes what is sent here, so
- * answering at `1.0.0` costs a host nothing and is what the newer host is
- * for.
+ * What `1.0.0` adds is not drawn either - a chat's own read and archived
+ * bits, `moveChat`, background work.
  *
  * `0.10.0` is what VS Code 1.141's host answers, and it accepts nothing else.
  * It is VS Code's own number, never published, with the wire contract of
@@ -234,7 +232,7 @@ function isRpcRefusal(error: unknown): boolean {
  *
  * This list is load-bearing, because there is no fallback behind it.
  */
-const VERSIONS = ['1.0.0', '0.10.0', '0.9.0', '0.8.0', '0.7.0'];
+const VERSIONS = ['1.1.0', '1.0.0', '0.10.0', '0.9.0', '0.8.0', '0.7.0'];
 
 const ROOT = 'ahp-root://';
 const AUTOMATIONS = 'ahp-automations://';
@@ -1519,9 +1517,14 @@ function customizations(value: unknown): Customization[] {
  * everything else and needs no bookkeeping here - which is the point of
  * queueing through the protocol rather than in the client: a message queued
  * from an editor shows up in this list too.
+ *
+ * Since 1.1.0 the list holds steering messages as well, each with
+ * `kind: 'steering'`, and a host on 1.1.0 sends them in a snapshot to a
+ * client at any version. A steering message is not waiting for a turn, so it
+ * is left out. An entry with no `kind` is a queued one, as the reducer reads it.
  */
 function queued(chat: Bag): QueuedMessage[] {
-  return list(chat.queuedMessages).map((entry) => {
+  return list(chat.queuedMessages).filter((entry) => str(bag(entry).kind) !== 'steering').map((entry) => {
     const found = bag(entry);
     const model = selection(bag(found.message).model);
     return { id: str(found.id) ?? '', text: str(bag(found.message).text) ?? '', ...(model ? { model } : {}) };
@@ -3172,9 +3175,11 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
     /*
      * The same action `queue` sends, under the other kind.
      *
-     * One slot on the chat rather than a list, because a steering message is
-     * not waiting for anything: the host hands it to the turn that is running
-     * at its next step. A host with no turn to steer refuses it.
+     * Since 1.1.0 the host keeps it in `queuedMessages` with
+     * `kind: 'steering'`, beside the queued ones, and `queued()` leaves it
+     * out: a steering message is not waiting for anything, because the host
+     * hands it to the turn that is running at its next step. A host with no
+     * turn to steer refuses it.
      */
     steer: (uri, text, model) => {
       dispatch(uri, {

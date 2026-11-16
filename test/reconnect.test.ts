@@ -565,6 +565,32 @@ describe('the first snapshot is not sent before the conversation is in it', () =
     await host.close();
   });
 
+  it('lists a queued message and not a steering one', async () => {
+    const { host, scripted } = await connect();
+    scripted.states.set(SESSION, { defaultChat: CHAT, chats: [] });
+    // As a host on 1.1.0 sends it, to a client at any version.
+    scripted.states.set(CHAT, {
+      turns: [turn(1)],
+      queuedMessages: [
+        { id: 'q1', message: { text: 'next' } },
+        { id: 's1', kind: 'steering', message: { text: 'look again' } },
+        { id: 'q2', kind: 'queued', message: { text: 'after' } },
+      ],
+    });
+
+    const first = await new Promise<HostEvent>((resolve) => {
+      const view = host.subscribe(SESSION as never, (event) => {
+        if (event.type === 'snapshot') { resolve(event); view.close(); }
+      });
+    });
+
+    expect(first.type === 'snapshot' && first.queued).toEqual([
+      { id: 'q1', text: 'next' },
+      { id: 'q2', text: 'after' },
+    ]);
+    await host.close();
+  });
+
   it('still answers for a session that has no chat to wait for', async () => {
     const { host, scripted } = await connect();
     scripted.states.set(SESSION, { chats: [] });
@@ -1168,12 +1194,12 @@ describe('the handshake asks for what it needs in one round trip', () => {
     await host.close();
   });
 
-  it('offers `1.0.0` first and `0.10.0` right behind it', async () => {
+  it('offers `1.1.0` first and `0.10.0` right behind `1.0.0`', async () => {
     const { host, scripted } = await connect();
     await settle();
 
     const hello = scripted.asked.find((frame) => frame.method === 'initialize');
-    expect(hello?.params?.protocolVersions).toEqual(['1.0.0', '0.10.0', '0.9.0', '0.8.0', '0.7.0']);
+    expect(hello?.params?.protocolVersions).toEqual(['1.1.0', '1.0.0', '0.10.0', '0.9.0', '0.8.0', '0.7.0']);
 
     await host.close();
   });

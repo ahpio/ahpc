@@ -5,9 +5,9 @@ captures of both hosts rather than from memory. Kept so the next person does
 not have to re-derive it, and so a gap is a decision somebody made rather than
 one nobody noticed.
 
-Checked against `@microsoft/agent-host-protocol` 1.0.0, the published package,
-which this client offers first and still falls back from to 0.9.0, 0.8.0 and
-0.7.0. The comparisons with the copy vendored in VS Code and with the
+Checked against `@microsoft/agent-host-protocol` 1.1.0, the published package,
+which this client offers first, with 1.0.0 behind it, and still falls back
+from to 0.9.0, 0.8.0 and 0.7.0. The comparisons with the copy vendored in VS Code and with the
 specification repository were made against 0.9.0 on 2026-09-13.
 
 ## How this was established
@@ -91,7 +91,7 @@ came out of the list the day the host resynced to `0.9.0`, because offering a
 version the installed types do not describe is a host answering in a shape
 nothing here has heard of. The second spelling stays, normalised at the edge
 for one line, until the Insiders builds from that window are gone.
-`1.0.0` is offered first again now that the package publishes it.
+`1.0.0` is offered again now that the package publishes it, behind `1.1.0`.
 
 **`expiresIn` is sent on `authenticate` and the published package does not
 declare it.** The specification repository does, and `authentication.md` has
