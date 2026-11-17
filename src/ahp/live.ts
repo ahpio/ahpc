@@ -1,4 +1,5 @@
 import { appendFileSync } from 'node:fs';
+import { socketHeld } from '../exit.js';
 import { randomUUID } from 'node:crypto';
 import { openChannels } from './channels.js';
 import type { Consumer } from './channels.js';
@@ -327,6 +328,9 @@ interface Loaded {
   changesetReducer(state: unknown, action: unknown): unknown;
 }
 
+/** How long a close waits for the host to answer it. */
+export const CLOSE_WAIT_MS = 2_000;
+
 /**
  * A failed attempt that no retry can fix, thrown by an opener.
  *
@@ -347,8 +351,15 @@ export class StopRetrying extends Error {
  * The package's own `connect` takes a URL only, so the socket is opened here
  * and handed over once it is open. Node's `WebSocket` reads `headers` from its
  * second argument; a browser's would not, and ahpc does not run in one.
+ * A `handshake` runs on the open socket before the transport takes it, such as
+ * the pick a tunnel gateway asks for.
  */
-function openWithHeaders(ahp: Loaded, url: string, headers: Record<string, string>): Promise<unknown> {
+function openWithHeaders(
+  ahp: Loaded,
+  url: string,
+  headers: Record<string, string>,
+  handshake?: (socket: WebSocket) => Promise<void>,
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const Socket = WebSocket as unknown as new (url: string, options: { headers: Record<string, string> }) => WebSocket;
     const socket = new Socket(url, { headers });
@@ -357,7 +368,14 @@ function openWithHeaders(ahp: Loaded, url: string, headers: Record<string, strin
       socket.removeEventListener('error', failed);
       socket.removeEventListener('close', failed);
     };
-    const opened = (): void => { done(); resolve(ahp.fromSocket(socket)); };
+    const opened = (): void => {
+      done();
+      if (handshake === undefined) { resolve(ahp.fromSocket(socket)); return; }
+      handshake(socket).then(
+        () => resolve(ahp.fromSocket(socket)),
+        (error: unknown) => { socket.close(); reject(error); },
+      );
+    };
     const failed = (): void => { done(); reject(new Error(`WebSocket to ${url} did not open`)); };
     socket.addEventListener('open', opened);
     socket.addEventListener('error', failed);
@@ -370,18 +388,20 @@ function openWithHeaders(ahp: Loaded, url: string, headers: Record<string, strin
  *
  * The token goes in `?tkn=`, and the headers, when there are any, go on the
  * upgrade. `liveHost` uses this when it is given no opener of its own, and a
- * caller that wraps an attempt calls it to get the same socket.
+ * caller that wraps an attempt calls it to get the same socket. A `handshake`
+ * runs on each open socket before AHP starts.
  */
 export async function socketOpener(
-  options: Pick<LiveHostOptions, 'url' | 'token' | 'headers'>,
+  options: Pick<LiveHostOptions, 'url' | 'token' | 'headers'> & { handshake?: (socket: WebSocket) => Promise<void> },
 ): Promise<() => Promise<unknown>> {
   const ahp = await load();
   const endpoint = options.token
     ? `${options.url}${options.url.includes('?') ? '&' : '?'}tkn=${encodeURIComponent(options.token)}`
     : options.url;
   const headers = options.headers ?? {};
-  return Object.keys(headers).length > 0
-    ? () => openWithHeaders(ahp, endpoint, headers)
+  const handshake = options.handshake;
+  return Object.keys(headers).length > 0 || handshake !== undefined
+    ? () => openWithHeaders(ahp, endpoint, headers, handshake)
     : () => ahp.connect(endpoint);
 }
 
@@ -3599,7 +3619,14 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
       for (const timer of timers) clearTimeout(timer);
       timers.clear();
       channels.detach();
-      await client.shutdown();
+      // A host that never answers the close frame, such as a VS Code tunnel
+      // gateway, would hold this forever, so the wait has a limit, and the
+      // socket left closing is marked for the entry point.
+      await new Promise<void>((done) => {
+        const limit = setTimeout(() => { socketHeld(); done(); }, CLOSE_WAIT_MS);
+        limit.unref();
+        void client.shutdown().finally(() => { clearTimeout(limit); done(); });
+      });
     },
   };
   self = made;

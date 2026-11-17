@@ -7,6 +7,8 @@
 | `host` | string | `--host` | The host, `ws://host:port` |
 | `token` | string | `--token` | A token for the host. Prefer `connectionTokenFile` |
 | `connectionTokenFile` | string | `--connection-token-file` | A file that holds the token |
+| `tunnelAccess` | string | `--tunnel-access` | How a `tunnel:` host is reached: `auto` (default), `anonymous` or `signed-in`. See [Connect](../start/CONNECT.md#a-host-behind-a-dev-tunnel) |
+| `tunnelHost` | string | `--tunnel-host` | The agent host on a VS Code tunnel: `editor` (default) or `dedicated`. See [Connect](../start/CONNECT.md#a-vs-code-tunnel) |
 | `trust` | string[] | `--trust` | [Trusted folders](../start/CONFIGURE.md#trusted-folders) |
 | `theme` | string | `--theme` | The theme to open on |
 | `lang` | string | `--lang` | `en`, `pt-br` or `es` |

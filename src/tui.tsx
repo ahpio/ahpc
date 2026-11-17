@@ -9,7 +9,9 @@ import { parseSessionLink } from './links.js';
 import { CONTROLLER, commandIdFor } from './control.js';
 import { connect, sink } from './connect.js';
 import type { HostConnection } from './ahp/connection.js';
-import { connectionToken, loadConfig } from './config.js';
+import { connectionToken, loadConfig, tunnelAccessOf, tunnelHostOf } from './config.js';
+import type { TunnelAccess } from './ahp/tunnel.js';
+import type { TunnelHost } from './ahp/gateway.js';
 import { DRAFT, UPDATE_NOTICE, clearHostError, reportHostError } from './state.js';
 import { MAX_AGE_MS, checkingUpdates, readUpdate, refreshUpdate, registry, stale, updateNotice } from './update.js';
 import { manifest } from './version.js';
@@ -80,6 +82,14 @@ interface Options {
   tokenFile?: string;
   /** A connect token for a `tunnel:` host, from `--tunnel-token` or `AHPC_TUNNEL_TOKEN`. */
   tunnelToken?: string;
+  /** How a `tunnel:` host is reached, from `--tunnel-access` or the config file. */
+  tunnelAccess?: TunnelAccess;
+  /** What `--tunnel-access` said, checked once the config file is read. */
+  tunnelAccessSaid?: string;
+  /** The agent host to pick on a VS Code tunnel, from `--tunnel-host` or the config file. */
+  tunnelHost?: TunnelHost;
+  /** What `--tunnel-host` said, checked once the config file is read. */
+  tunnelHostSaid?: string;
   /** Read this config instead of the one XDG names. */
   configFile?: string;
   /** Keys from the config file, over the ones this client ships with. */
@@ -240,6 +250,8 @@ export function parse(argv: string[]): Options {
       case '--token': options.token = String(argv[++i]); break;
       case '--connection-token-file': options.tokenFile = String(argv[++i]); break;
       case '--tunnel-token': options.tunnelToken = String(argv[++i]); break;
+      case '--tunnel-access': options.tunnelAccessSaid = String(argv[++i]); break;
+      case '--tunnel-host': options.tunnelHostSaid = String(argv[++i]); break;
       case '--config-file': options.configFile = String(argv[++i]); break;
       case '--path': options.path = String(argv[++i]); break;
       // Read below rather than here: `--trust` is not a folder of its own,
@@ -457,6 +469,8 @@ export async function tui(argv: string[]): Promise<void> {
       },
       file,
     );
+    options.tunnelAccess = tunnelAccessOf(options.tunnelAccessSaid, file);
+    options.tunnelHost = tunnelHostOf(options.tunnelHostSaid, file);
   }
   catch (error) {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);

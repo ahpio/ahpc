@@ -62,7 +62,7 @@ Reference: [00-ahp.md](ahp/00-ahp.md)
 | [20261104-0734 - The sign-in prompt answers the ask it was opened for, sends once, and settles on close](ahp/20261104-0734-the-sign-in-prompt-settles-its-edges/plan.md) | medium | built 2026-11-04 ([implemented.md](ahp/20261104-0734-the-sign-in-prompt-settles-its-edges/implemented.md)) | ahp/20261104-0734-the-retry-comments-agree-with-the-spec | - |
 | [20261115-0721 - ahpc speaks protocol 1.1.0](ahp/20261115-0721-protocol-1-1-0/plan.md) | high | built 2026-11-16 ([implemented.md](ahp/20261115-0721-protocol-1-1-0/implemented.md)) | ahp/05, ahp/08 | - |
 | [20261117-0551 - A host behind a Dev Tunnel is reached by its tunnel address](ahp/20261117-0551-a-tunnel-host-is-reached-by-address/plan.md) | high | built 2026-11-17 ([implemented.md](ahp/20261117-0551-a-tunnel-host-is-reached-by-address/implemented.md)) | - | ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels, cli/20261117-0752-ahpc-keeps-named-servers |
-| [20261117-0551 - ahpc signs in to Dev Tunnels and reaches a private tunnel](ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md) | high | draft | ahp/20261117-0551-a-tunnel-host-is-reached-by-address | cli/20261117-0752-ahpc-keeps-named-servers |
+| [20261117-0551 - ahpc signs in to Dev Tunnels and reaches a private tunnel](ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md) | high | built 2026-11-17 ([implemented.md](ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels/implemented.md)) | ahp/20261117-0551-a-tunnel-host-is-reached-by-address | cli/20261117-0752-ahpc-keeps-named-servers |
 
 Next free number in `ahp`: `09`.
 

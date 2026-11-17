@@ -29,7 +29,7 @@ export const COMMANDS: ReadonlySet<string> = new Set([
   'prompt', 'exec', 'cancel', 'queue', 'unqueue',
   'watch', 'confirm', 'answer', 'dispatch',
   'auth', 'automation', 'logs',
-  'mcp', 'serve', 'wire',
+  'mcp', 'serve', 'wire', 'tunnel',
 ]);
 
 /**

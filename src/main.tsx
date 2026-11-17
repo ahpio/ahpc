@@ -69,8 +69,15 @@ else if (first !== undefined) {
       process.exitCode = 1;
     }
   }
+  // A socket stuck closing would hold the finished command open.
+  const { exitIfHeld } = await import('./exit.js');
+  await exitIfHeld();
 }
 else {
   const { tui } = await import('./tui.js');
   await tui(argv);
+  // A still is over here, and a socket stuck closing would hold it open. The
+  // live screen has closed nothing yet, and ends itself on quit.
+  const { exitIfHeld } = await import('./exit.js');
+  await exitIfHeld();
 }

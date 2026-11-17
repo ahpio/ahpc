@@ -12,8 +12,8 @@ import type { AddressInfo } from 'node:net';
 import { InMemoryTransport, type AhpTransport } from '@microsoft/agent-host-protocol/client';
 import { StopRetrying, liveHost } from '../src/ahp/live.js';
 import { whyNoConnection } from '../src/ahp/refused.js';
-import { noCluster, noOwnToken, portUrl, tunnelHeaders, tunnelOf, tunnelRefused } from '../src/ahp/tunnel.js';
-import { hostUrl } from '../src/connect.js';
+import { deriveConnectionToken, noCluster, noOwnToken, portUrl, tunnelHeaders, tunnelOf, tunnelRefused, wayIn } from '../src/ahp/tunnel.js';
+import { hostUrl, routeOf } from '../src/connect.js';
 import { Scripted, settle } from './scenario.js';
 
 let running: Server | undefined;
@@ -145,5 +145,29 @@ describe('a refused tunnel stops and says how', () => {
     expect(refusals).toEqual(['refused for good']);
     expect(states.at(-1)).toBe('offline');
     await host.close();
+  });
+});
+
+describe('a private tunnel is reached signed in', () => {
+  it('derives the token VS Code and ahpd derive', () => {
+    expect(deriveConnectionToken('l3rs99qw')).toBe('9H7j5ZW6E53OEqM8cxPyikMNLQHTkSMiqvMaTQ8kgfg');
+    expect(deriveConnectionToken('t176')).toBe('a-KTU0hXCEJ9oxf50GjzLWX2ICYOhcERdI2Xf8mc0FNY');
+  });
+
+  it('picks the way in: auto goes anonymous only with a cluster and a token of your own', () => {
+    expect(wayIn({ id: 'a', cluster: 'usw2' }, 'auto', 'mine')).toBe('anonymous');
+    expect(wayIn({ id: 'a', cluster: 'usw2' }, 'auto', undefined)).toBe('signed-in');
+    expect(wayIn({ id: 'a' }, 'auto', 'mine')).toBe('signed-in');
+    expect(wayIn({ id: 'a' }, 'anonymous', undefined)).toBe('anonymous');
+    expect(wayIn({ id: 'a', cluster: 'usw2' }, 'signed-in', 'mine')).toBe('signed-in');
+  });
+
+  it('sends the derived token only on the signed-in way, and only with no token of your own', () => {
+    const signedIn = routeOf('tunnel:abc', {}, 'signed-in');
+    expect(typeof signedIn !== 'string' && signedIn.token).toBe(deriveConnectionToken('abc'));
+    const own = routeOf('tunnel:abc', { token: 'mine' }, 'signed-in');
+    expect(typeof own !== 'string' && own.token).toBe('mine');
+    // The anonymous way never makes a token up: with none of the person's own, it stops.
+    expect(routeOf('tunnel:abc.usw2', {}, 'anonymous')).toBe(noOwnToken('tunnel:abc.usw2'));
   });
 });
