@@ -1,6 +1,6 @@
 ---
 title: A refused tunnel stops and says how
-status: todo
+status: done
 depends:
   - task-02-a-connect-token-rides-on-the-socket.md
 layer: "ahp"

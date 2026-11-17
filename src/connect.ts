@@ -1,7 +1,8 @@
 /** Which host this run talks to, for either front end. */
 
-import { MissingProtocolPackage, liveHost } from './ahp/live.js';
-import { whyNoConnection } from './ahp/refused.js';
+import { MissingProtocolPackage, StopRetrying, liveHost, socketOpener } from './ahp/live.js';
+import { whyNoConnection, type ThroughTunnel } from './ahp/refused.js';
+import { noCluster, noOwnToken, portUrl, tunnelHeaders, tunnelOf, tunnelRefused } from './ahp/tunnel.js';
 import { fakeHost } from './ahp/fake.js';
 import { publish } from './ahp/publish.js';
 import { pushTokens, tokenVariable } from './ahp/tokens.js';
@@ -22,6 +23,13 @@ export interface Where {
   host?: string;
   /** A bearer token for it. */
   token?: string;
+  /**
+   * A connect token from a Dev Tunnel's owner, for a `tunnel:` host.
+   *
+   * Sent on the socket's upgrade, apart from `token`: the tunnel reads this
+   * one and the host behind it reads the other.
+   */
+  tunnelToken?: string;
   /** Where the agent works - a path on the *host*, not on this machine. */
   path?: string;
   /**
@@ -101,14 +109,22 @@ export const auth: { ask(one: AuthAsk): void } = {
  */
 export async function connect(options: Where): Promise<HostConnection & { pump?(): boolean }> {
   if (!options.host) return fakeHost();
+  const reached = hostUrl(options.host, options.token, options.tunnelToken);
+  if (typeof reached === 'string') {
+    process.stderr.write(`${reached}\n`);
+    process.exit(1);
+  }
+  const { url, tunnel } = reached;
+  const why = (): Promise<string> => whyNoConnection(url, options.token, tunnel);
   /** The last reason said for a failed retry, so a retry loop does not repeat it. */
   let reported = '';
   /** Whether the connection is up now, so an answer that arrives late can be dropped. */
   let back = false;
   try {
     return await liveHost({
-      url: options.host,
+      url,
       ...(options.token ? { token: options.token } : {}),
+      ...(tunnel?.headers !== undefined ? { headers: tunnel.headers, connect: await stopsOnRefusal(url, options.token, tunnel) } : {}),
       ...(options.wire ? { wire: options.wire } : {}),
       onRefusal: (uri, message, kind) => sink.refused(uri, message, kind),
       onLimit: (message) => sink.report(message),
@@ -147,7 +163,7 @@ export async function connect(options: Where): Promise<HostConnection & { pump?(
        * same reason twice is the same line on the status row.
        */
       onRetryFailed: () => {
-        void whyNoConnection(options.host as string, options.token).then((sentence) => {
+        void why().then((sentence) => {
           // The plain request takes a round trip, and the connection may have
           // come back while it was out. A reason for a state that ended is
           // wrong on screen, so it is dropped rather than said late.
@@ -188,7 +204,55 @@ export async function connect(options: Where): Promise<HostConnection & { pump?(
       process.stderr.write(`${error.message}\n`);
       process.exit(1);
     }
-    process.stderr.write(`${await whyNoConnection(options.host, options.token)}\n`);
+    process.stderr.write(`${error instanceof StopRetrying ? error.message : await why()}\n`);
     process.exit(1);
   }
+}
+
+/**
+ * The URL a host string opens, or the sentence for one that cannot be opened.
+ *
+ * A `ws://` or `wss://` host is its own URL. A `tunnel:<id>.<cluster>` host is
+ * the tunnel's port URL, and needs the person's own token: an anonymous tunnel
+ * lets anybody reach the port, so that token is what says who is connecting.
+ */
+export function hostUrl(
+  host: string,
+  token: string | undefined,
+  tunnelToken: string | undefined,
+): { url: string; tunnel?: ThroughTunnel } | string {
+  const tunnel = tunnelOf(host);
+  if (tunnel === undefined) return { url: host };
+  if (tunnel.cluster === undefined) return noCluster(host);
+  if (token === undefined) return noOwnToken(host);
+  return {
+    url: portUrl({ id: tunnel.id, cluster: tunnel.cluster }),
+    tunnel: {
+      host,
+      id: tunnel.id,
+      ...(tunnelToken !== undefined ? { headers: tunnelHeaders(tunnelToken) } : {}),
+    },
+  };
+}
+
+/**
+ * An opener that ends the retry loop when the tunnel refuses the connect token.
+ *
+ * A refused connect token is refused on every attempt, so a failed open asks
+ * why, and that answer ends the loop with the sentence that says how to get a
+ * new token. Any other failure is thrown on, and the loop tries again.
+ */
+async function stopsOnRefusal(url: string, token: string | undefined, tunnel: ThroughTunnel): Promise<() => Promise<unknown>> {
+  const open = await socketOpener({ url, ...(token !== undefined ? { token } : {}), ...(tunnel.headers !== undefined ? { headers: tunnel.headers } : {}) });
+  const refused = tunnelRefused(tunnel.host, tunnel.id, true);
+  return async () => {
+    try {
+      return await open();
+    }
+    catch (error) {
+      const sentence = await whyNoConnection(url, token, tunnel);
+      if (sentence === refused) throw new StopRetrying(sentence);
+      throw error;
+    }
+  };
 }

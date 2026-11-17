@@ -7,8 +7,20 @@
  * token, 426 is a host that is up, and no answer at all is neither.
  */
 
+import { tunnelRefused } from './tunnel.js';
+
 /** How long the plain request waits for an answer before it is stopped. */
 const ASK_TIMEOUT_MS = 3_000;
+
+/** A host reached through a Dev Tunnel, for the sentences that name it. */
+export interface ThroughTunnel {
+  /** The address the person gave, `tunnel:<id>.<cluster>`. */
+  host: string;
+  /** The tunnel id, for the `devtunnel token` command a sentence names. */
+  id: string;
+  /** The headers the socket sent, and so the GET sends too. */
+  headers?: Record<string, string>;
+}
 
 /**
  * The sentence for a connection that failed.
@@ -17,26 +29,36 @@ const ASK_TIMEOUT_MS = 3_000;
  * which is where the socket carries it too. It runs only after the socket has
  * failed, so the wait is on a path that has already gone wrong.
  */
-export async function whyNoConnection(url: string, token?: string): Promise<string> {
+export async function whyNoConnection(url: string, token?: string, tunnel?: ThroughTunnel): Promise<string> {
+  const named = tunnel?.host ?? url;
   let response: Response;
   try {
-    response = await fetch(address(url, token), { signal: AbortSignal.timeout(ASK_TIMEOUT_MS) });
+    response = await fetch(address(url, token), {
+      signal: AbortSignal.timeout(ASK_TIMEOUT_MS),
+      ...(tunnel?.headers !== undefined ? { headers: tunnel.headers } : {}),
+      // A tunnel that wants a sign-in answers with a redirect to one. Followed,
+      // it reads as a page that loaded, which says nothing about the tunnel.
+      ...(tunnel !== undefined ? { redirect: 'manual' as const } : {}),
+    });
   }
   catch (error) {
-    return `Could not reach ${url}: ${reason(error)}. If it is running, check the connection token.`;
+    return `Could not reach ${named}: ${reason(error)}. If it is running, check the connection token.`;
   }
   // The status is all this needed. A body left unread holds the socket open
   // until the connection is collected.
   await response.body?.cancel();
+  if (tunnel !== undefined && response.status >= 300 && response.status < 400) {
+    return tunnelRefused(tunnel.host, tunnel.id, tunnel.headers !== undefined);
+  }
   if (response.status === 401) {
     return token === undefined
-      ? `The host at ${url} needs a connection token.`
-      : `The host at ${url} refused the connection token.`;
+      ? `The host at ${named} needs a connection token.`
+      : `The host at ${named} refused the connection token.`;
   }
   if (response.status === 426) {
-    return `The host at ${url} is up, but the connection failed: ${status(response)}.`;
+    return `The host at ${named} is up, but the connection failed: ${status(response)}.`;
   }
-  return `Could not reach ${url}: ${status(response)}. If it is running, check the connection token.`;
+  return `Could not reach ${named}: ${status(response)}. If it is running, check the connection token.`;
 }
 
 /**

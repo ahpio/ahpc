@@ -12,7 +12,7 @@ ahpc needs two things: the host's address and, if the host asks for one, a token
 
 A flag wins over the environment, and the environment wins over the file. With none of them, ahpc uses the scripted host.
 
-The address is `ws://` or `wss://`.
+The address is `ws://`, `wss://`, or `tunnel:<id>.<cluster>` for a host behind a Dev Tunnel.
 
 ## The token
 
@@ -44,6 +44,26 @@ ahpc --host wss://ahpd.example.com --token <token>
 ```
 
 ahpd can give each person their own token. See [Users](https://ahpio.github.io/ahpd/server/USERS) in its docs.
+
+### A host behind a Dev Tunnel
+
+A host behind NAT can be reached through a [Dev Tunnel](https://learn.microsoft.com/azure/developer/dev-tunnels/), with no public port. ahpc opens port 31546 of the tunnel, where VS Code and ahpd put their agent host:
+
+```sh
+ahpc --host tunnel:l3rs99qw.usw2 --token <token>
+```
+
+The id and the cluster are in the tunnel's port URL, `https://l3rs99qw-31546.usw2.devtunnels.ms`.
+
+Bring your own token for the host, even on an anonymous tunnel. Anybody with the URL can reach an anonymous tunnel, so the token is what tells the host who you are.
+
+A private tunnel also needs a connect token from its owner. The owner runs `devtunnel token <id> --scopes connect`, and you pass it with `--tunnel-token` or `AHPC_TUNNEL_TOKEN`:
+
+```sh
+AHPC_TUNNEL_TOKEN=<connect token> ahpc --host tunnel:l3rs99qw.usw2 --token <token>
+```
+
+A connect token lasts 24 hours. When the tunnel refuses it, ahpc stops and says how to get a new one.
 
 ## Protected resources
 

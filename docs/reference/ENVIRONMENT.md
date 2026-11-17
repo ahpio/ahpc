@@ -4,6 +4,7 @@
 | --- | --- |
 | `AHPC_HOST` | The host to connect to. `--host` wins over it |
 | `AHPC_TOKEN` | A token for the host. `--token` and `--connection-token-file` win over it |
+| `AHPC_TUNNEL_TOKEN` | A connect token for a private Dev Tunnel. `--tunnel-token` wins over it. See [Connect](../start/CONNECT.md#a-host-behind-a-dev-tunnel) |
 | `AHPC_TOKEN_<RESOURCE>` | A token for one protected resource. See [Connect](../start/CONNECT.md#protected-resources) |
 | `AHPC_RECORD` | Record every frame to this file, as `--wire` does |
 | `AHPC_DEBUG` | `1` prints the stack under an error, for a bug report |
