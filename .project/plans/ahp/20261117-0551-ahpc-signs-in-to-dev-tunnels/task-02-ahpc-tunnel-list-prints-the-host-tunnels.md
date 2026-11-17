@@ -1,6 +1,6 @@
 ---
 title: ahpc tunnel list prints the host tunnels
-status: todo
+status: done
 depends:
   - task-01-ahpc-tunnel-login-keeps-a-sign-in.md
 layer: "ahp"

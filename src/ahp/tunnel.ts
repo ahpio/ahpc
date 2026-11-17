@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 /**
  * A host behind a Dev Tunnel, named by its tunnel.
  *
@@ -83,4 +85,36 @@ export function tunnelRefused(host: string, id: string, hadToken: boolean): stri
   return hadToken
     ? `The tunnel at ${host} refused the connect token, which may have expired. Get a new one with devtunnel token ${id} --scopes connect and set AHPC_TUNNEL_TOKEN.`
     : `The tunnel at ${host} needs a sign-in. Pass --tunnel-token with a token from devtunnel token ${id} --scopes connect.`;
+}
+
+/**
+ * The connection token VS Code presents to a host it reaches through a tunnel.
+ *
+ * VS Code's `deriveConnectionToken` in `tunnelAgentHostConnector.ts`, which
+ * ahpd's devtunnel plugin computes the same way: base64url of the SHA-256 of
+ * the tunnel id, unpadded, with a leading `-` prefixed by `a`. Reaching the
+ * tunnel signed in is the access check, so both ends can compute this value.
+ * It is sent only on the signed-in way: an anonymous tunnel has checked nobody.
+ */
+export function deriveConnectionToken(tunnelId: string): string {
+  const out = createHash('sha256').update(tunnelId).digest('base64url');
+  return out.startsWith('-') ? `a${out}` : out;
+}
+
+/** How a tunnel host is reached: `auto`, or one of the two ways by name. */
+export type TunnelAccess = 'auto' | 'anonymous' | 'signed-in';
+
+/** The values `tunnelAccess` and `--tunnel-access` take. */
+export const TUNNEL_ACCESS: readonly TunnelAccess[] = ['auto', 'anonymous', 'signed-in'];
+
+/**
+ * The way in for one tunnel address.
+ *
+ * `auto` goes anonymous when the address has a cluster and the person has a
+ * token of their own, which is everything the anonymous way needs, and signs
+ * in otherwise.
+ */
+export function wayIn(tunnel: Tunnel, access: TunnelAccess, token: string | undefined): 'anonymous' | 'signed-in' {
+  if (access !== 'auto') return access;
+  return tunnel.cluster !== undefined && token !== undefined ? 'anonymous' : 'signed-in';
 }

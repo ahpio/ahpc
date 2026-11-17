@@ -44,9 +44,9 @@ export async function whyNoConnection(url: string, token?: string, tunnel?: Thro
   catch (error) {
     return `Could not reach ${named}: ${reason(error)}. If it is running, check the connection token.`;
   }
-  // The status is all this needed. A body left unread holds the socket open
-  // until the connection is collected.
-  await response.body?.cancel();
+  // A body left unread holds the socket open until the connection is
+  // collected, so it is read when it can say why, and dropped otherwise.
+  const said = await shortText(response);
   if (tunnel !== undefined && response.status >= 300 && response.status < 400) {
     return tunnelRefused(tunnel.host, tunnel.id, tunnel.headers !== undefined);
   }
@@ -58,7 +58,31 @@ export async function whyNoConnection(url: string, token?: string, tunnel?: Thro
   if (response.status === 426) {
     return `The host at ${named} is up, but the connection failed: ${status(response)}.`;
   }
+  if (said !== undefined) return `The host at ${named} answered ${status(response)}: ${said}.`;
   return `Could not reach ${named}: ${status(response)}. If it is running, check the connection token.`;
+}
+
+/** The longest body a sentence quotes. */
+const QUOTED_LENGTH = 200;
+
+/**
+ * A failed answer's own reason, when its body is one short line of text
+ * with no type or `text/plain`.
+ *
+ * A VS Code tunnel answers its root route with 503 and the sentence
+ * `This tunnel serves a specific agent host; upgrade required`, which says
+ * more than the status does. Any other body is dropped unread.
+ */
+async function shortText(response: Response): Promise<string | undefined> {
+  // The VS Code CLI names no type for its sentence; a page names `text/html`.
+  const type = response.headers.get('content-type') ?? '';
+  const plain = type === '' || type.startsWith('text/plain');
+  if (response.ok || !plain) {
+    await response.body?.cancel();
+    return undefined;
+  }
+  const text = (await response.text()).trim().replace(/\.$/, '');
+  return text !== '' && text.length <= QUOTED_LENGTH && !text.includes('\n') ? text : undefined;
 }
 
 /**

@@ -2,7 +2,12 @@
 
 import { MissingProtocolPackage, StopRetrying, liveHost, socketOpener } from './ahp/live.js';
 import { whyNoConnection, type ThroughTunnel } from './ahp/refused.js';
-import { noCluster, noOwnToken, portUrl, tunnelHeaders, tunnelOf, tunnelRefused } from './ahp/tunnel.js';
+import {
+  deriveConnectionToken, noCluster, noOwnToken, portUrl, tunnelHeaders, tunnelOf, tunnelRefused, wayIn,
+  type Tunnel, type TunnelAccess,
+} from './ahp/tunnel.js';
+import { NeedsPerson, openSignedIn, type SignedInOpen } from './ahp/devtunnels.js';
+import { GATEWAY_PATH, GATEWAY_PROTOCOL, GatewayError, GatewayRefused, select, type TunnelHost } from './ahp/gateway.js';
 import { fakeHost } from './ahp/fake.js';
 import { publish } from './ahp/publish.js';
 import { pushTokens, tokenVariable } from './ahp/tokens.js';
@@ -30,6 +35,10 @@ export interface Where {
    * one and the host behind it reads the other.
    */
   tunnelToken?: string;
+  /** How a `tunnel:` host is reached: `auto`, `anonymous` or `signed-in`. */
+  tunnelAccess?: TunnelAccess;
+  /** The agent host to pick on a VS Code tunnel not bound to one: `editor` or `dedicated`. */
+  tunnelHost?: TunnelHost;
   /** Where the agent works - a path on the *host*, not on this machine. */
   path?: string;
   /**
@@ -109,22 +118,25 @@ export const auth: { ask(one: AuthAsk): void } = {
  */
 export async function connect(options: Where): Promise<HostConnection & { pump?(): boolean }> {
   if (!options.host) return fakeHost();
-  const reached = hostUrl(options.host, options.token, options.tunnelToken);
-  if (typeof reached === 'string') {
-    process.stderr.write(`${reached}\n`);
+  const host = options.host;
+  const tunnel = tunnelOf(host);
+  const access = options.tunnelAccess ?? 'auto';
+  const way = tunnel === undefined ? undefined : wayIn(tunnel, access, options.token);
+  let route = routeOf(host, options, way);
+  if (typeof route === 'string') {
+    process.stderr.write(`${route}\n`);
     process.exit(1);
   }
-  const { url, tunnel } = reached;
-  const why = (): Promise<string> => whyNoConnection(url, options.token, tunnel);
+  const why = (error?: unknown): Promise<string> => (route as Route).why(error);
   /** The last reason said for a failed retry, so a retry loop does not repeat it. */
   let reported = '';
   /** Whether the connection is up now, so an answer that arrives late can be dropped. */
   let back = false;
   try {
-    return await liveHost({
-      url,
-      ...(options.token ? { token: options.token } : {}),
-      ...(tunnel?.headers !== undefined ? { headers: tunnel.headers, connect: await stopsOnRefusal(url, options.token, tunnel) } : {}),
+    const attempt = async (through: Route): Promise<HostConnection & { pump?(): boolean }> => liveHost({
+      url: through.url,
+      ...(through.token ? { token: through.token } : {}),
+      ...(through.opener !== undefined ? { connect: await through.opener() } : {}),
       ...(options.wire ? { wire: options.wire } : {}),
       onRefusal: (uri, message, kind) => sink.refused(uri, message, kind),
       onLimit: (message) => sink.report(message),
@@ -162,8 +174,8 @@ export async function connect(options: Where): Promise<HostConnection & { pump?(
        * would have said. The retry loop runs until the host is back, and the
        * same reason twice is the same line on the status row.
        */
-      onRetryFailed: () => {
-        void why().then((sentence) => {
+      onRetryFailed: (error) => {
+        void why(error).then((sentence) => {
           // The plain request takes a round trip, and the connection may have
           // come back while it was out. A reason for a state that ended is
           // wrong on screen, so it is dropped rather than said late.
@@ -193,20 +205,126 @@ export async function connect(options: Where): Promise<HostConnection & { pump?(
        * connection - the host drops what it holds when a socket closes - so
        * both are sent again after every reconnect.
        */
-      onConnected: async (host) => {
-        await pushTokens(host);
-        await pushTrust(host, trustedUris(options.trust ?? []));
+      onConnected: async (connected) => {
+        await pushTokens(connected);
+        await pushTrust(connected, trustedUris(options.trust ?? []));
       },
     });
+    try {
+      return await attempt(route);
+    }
+    catch (error) {
+      /*
+       * `auto` went anonymous, and the tunnel wants a sign-in. The signed-in
+       * way is the other door to the same host, so it is tried once before
+       * anything is said.
+       */
+      if (access !== 'auto' || way !== 'anonymous' || tunnel === undefined || error instanceof MissingProtocolPackage) throw error;
+      const said = error instanceof StopRetrying ? error.message : await why(error);
+      const refused = [tunnelRefused(host, tunnel.id, false), tunnelRefused(host, tunnel.id, true)];
+      if (!refused.includes(said)) throw error;
+      route = routeOf(host, options, 'signed-in') as Route;
+      return await attempt(route);
+    }
   }
   catch (error) {
     if (error instanceof MissingProtocolPackage) {
       process.stderr.write(`${error.message}\n`);
       process.exit(1);
     }
-    process.stderr.write(`${error instanceof StopRetrying ? error.message : await why()}\n`);
+    process.stderr.write(`${error instanceof StopRetrying ? error.message : await why(error)}\n`);
     process.exit(1);
   }
+}
+
+/** One way to a host: the URL, the token, how a socket opens, and why it failed. */
+interface Route {
+  /** The URL `liveHost` names the host by. */
+  url: string;
+  /** The host's token, in `?tkn=`. */
+  token?: string;
+  /** The opener for every attempt, when the default socket is not the one. */
+  opener?: () => Promise<() => Promise<unknown>>;
+  /** The sentence for a failed attempt. */
+  why(error?: unknown): Promise<string>;
+}
+
+/**
+ * The route to a host, or the sentence for one that cannot be reached.
+ *
+ * A `ws://` or `wss://` host is its own URL. A tunnel goes anonymous through
+ * its port URL with the person's own token, or signed in through the tunnel
+ * service, which answers the URL and a connect token on each attempt.
+ */
+export function routeOf(host: string, options: Where, way: 'anonymous' | 'signed-in' | undefined): Route | string {
+  const token = options.token;
+  const tunnel = tunnelOf(host);
+  if (tunnel === undefined || way === 'anonymous') {
+    const reached = hostUrl(host, token, options.tunnelToken);
+    if (typeof reached === 'string') return reached;
+    const through = reached.tunnel;
+    return {
+      url: reached.url,
+      ...(token !== undefined ? { token } : {}),
+      ...(through?.headers !== undefined ? { opener: () => stopsOnRefusal(reached.url, token, through) } : {}),
+      why: () => whyNoConnection(reached.url, token, through),
+    };
+  }
+  return signedInRoute(host, tunnel, token, options.tunnelHost ?? 'editor');
+}
+
+/**
+ * The signed-in route to a tunnel host.
+ *
+ * With no token of the person's own, the token VS Code derives from the tunnel
+ * id goes in `?tkn=`: the tunnel service has checked the account, which is the
+ * check VS Code relies on. A sign-in that is missing, refused or expired ends
+ * the retry loop, because no retry signs in.
+ *
+ * A tunnel labelled `protocolv6` or higher is a VS Code tunnel with a gateway,
+ * so the socket opens the gateway, picks an agent host, and sends no token:
+ * the gateway gives the host its own.
+ */
+function signedInRoute(host: string, tunnel: Tunnel, own: string | undefined, prefer: TunnelHost): Route {
+  const token = own ?? deriveConnectionToken(tunnel.id);
+  /** The open of the last attempt, for the sentence when it fails. */
+  let last: SignedInOpen | undefined;
+  /** The agent hosts the gateway refused, which the next pick skips. */
+  const refused = new Set<string>();
+  const through = (): ThroughTunnel => ({
+    host,
+    id: tunnel.id,
+    ...(last !== undefined && Object.keys(last.headers).length > 0 ? { headers: last.headers } : {}),
+  });
+  return {
+    url: host,
+    token,
+    opener: () => Promise.resolve(async () => {
+      try {
+        last = await openSignedIn(tunnel);
+      }
+      catch (error) {
+        if (error instanceof NeedsPerson) throw new StopRetrying(error.message);
+        throw error;
+      }
+      const open = (last.protocol ?? 0) >= GATEWAY_PROTOCOL
+        ? await socketOpener({
+          url: `${last.url}${GATEWAY_PATH}`,
+          headers: last.headers,
+          handshake: (socket) => select(socket, prefer, refused),
+        })
+        : await socketOpener({ url: last.url, token, headers: last.headers });
+      return open();
+    }),
+    why: async (error) => {
+      if (error instanceof GatewayRefused) return `The tunnel at ${host} could not open its agent host: ${error.message}.`;
+      if (error instanceof GatewayError) return `Could not reach ${host}: ${error.message}.`;
+      if (last === undefined) {
+        return `Could not reach ${host}: ${error instanceof Error ? error.message : String(error)}.`;
+      }
+      return whyNoConnection(last.url, token, through());
+    },
+  };
 }
 
 /**

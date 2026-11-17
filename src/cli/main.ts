@@ -6,7 +6,9 @@ import { pathToFileURL } from 'node:url';
 import { connect } from '../connect.js';
 import { askFor, authRequiredOf, failureWords, hostWords } from '../ahp/auth.js';
 import { tokenVariable } from '../ahp/tokens.js';
-import { configPath, connectionToken, loadConfig } from '../config.js';
+import { configPath, connectionToken, loadConfig, tunnelAccessOf, tunnelHostOf } from '../config.js';
+import type { TunnelAccess } from '../ahp/tunnel.js';
+import type { TunnelHost } from '../ahp/gateway.js';
 import { checkingUpdates, readUpdate, updateNotice } from '../update.js';
 import { manifest } from '../version.js';
 import type { Where } from '../connect.js';
@@ -181,8 +183,21 @@ The host
   --tunnel-token <t>
                   a connect token for a private tunnel, from
                   devtunnel token <id> --scopes connect, or AHPC_TUNNEL_TOKEN
+  --tunnel-access <auto|anonymous|signed-in>
+                  how a tunnel is reached; auto, or the config file's
+                  tunnelAccess, goes anonymous with a cluster and your own
+                  token, and signs in otherwise
+  --tunnel-host <editor|dedicated>
+                  the agent host on a VS Code tunnel that offers more than
+                  one; editor, or the config file's tunnelHost, takes the
+                  editor's own when it runs
   --config-file   read this instead of the one below
   (none)          the scripted host, which needs nothing installed
+
+Tunnels
+  tunnel login    sign in to Dev Tunnels with a code from GitHub
+  tunnel logout   forget that sign-in
+  tunnel list     the account's tunnels with an agent host       [--json]
 
 Configuration
   config          where the file is, and what is in force  [--json]
@@ -277,10 +292,19 @@ export const where = (rest: string[]): Where => {
   }
   catch (error) { throw new Fault(error instanceof Error ? error.message : String(error)); }
   const tunnelToken = args.value('--tunnel-token') ?? (process.env.AHPC_TUNNEL_TOKEN || undefined);
+  let tunnelAccess: TunnelAccess;
+  let tunnelHost: TunnelHost;
+  try {
+    tunnelAccess = tunnelAccessOf(args.value('--tunnel-access'), file);
+    tunnelHost = tunnelHostOf(args.value('--tunnel-host'), file);
+  }
+  catch (error) { throw new Fault(error instanceof Error ? error.message : String(error)); }
   return {
     ...(host ? { host } : {}),
     ...(token ? { token } : {}),
     ...(tunnelToken ? { tunnelToken } : {}),
+    tunnelAccess,
+    tunnelHost,
     ...(args.value('--cwd') ? { path: args.value('--cwd') as string } : {}),
     // What this client serves back to the host, and whether the host may
     // write into it. Both off unless asked for.
@@ -505,6 +529,40 @@ export async function cli(command: string, rest: string[]): Promise<number> {
       locale,
     });
     return 0;
+  }
+
+  /*
+   * A Dev Tunnels sign-in, and the tunnels it can reach.
+   *
+   * Answered before any connection: the sign-in is to GitHub and the list is
+   * the tunnel service's, so neither needs a host.
+   */
+  if (command === 'tunnel') {
+    const { hostTunnels, login, logout } = await import('../ahp/devtunnels.js');
+    const verb = args.positional(0);
+    try {
+      if (verb === 'login') {
+        const kept = await login((code, url) => line(`Open ${url} and enter ${code}.`));
+        line(`Signed in as ${kept.account}.`);
+        return 0;
+      }
+      if (verb === 'logout') {
+        line(logout() ? 'Signed out of Dev Tunnels.' : 'There was no Dev Tunnels sign-in.');
+        return 0;
+      }
+      if (verb === 'list') {
+        const rows = await hostTunnels();
+        if (wants) { json(rows); return 0; }
+        if (rows.length === 0) { line('No host tunnels on this account.'); return 0; }
+        table(rows.map((row) => [row.name, row.address, row.online ? 'online' : 'offline']));
+        return 0;
+      }
+    }
+    catch (error) {
+      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+      return 1;
+    }
+    throw new Fault('tunnel wants login, logout or list: ahpc tunnel list');
   }
 
   /*

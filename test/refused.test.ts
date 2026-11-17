@@ -36,6 +36,33 @@ const serve = async (status: number, statusMessage?: string): Promise<{ url: str
   return { url: `ws://127.0.0.1:${String(port)}`, asked };
 };
 
+/** A loopback host answering every request with one status and one body. */
+const serveBody = async (status: number, body: string, type?: string): Promise<string> => {
+  running = createServer((_request, response) => {
+    response.writeHead(status, type === undefined ? {} : { 'content-type': type });
+    response.end(body);
+  });
+  await new Promise<void>((done) => running?.listen(0, '127.0.0.1', done));
+  const { port } = running.address() as AddressInfo;
+  return `ws://127.0.0.1:${String(port)}`;
+};
+
+describe('a failed answer that says why is quoted', () => {
+  it('quotes a short body with no type, as the VS Code CLI sends it', async () => {
+    const url = await serveBody(503, 'This tunnel serves a specific agent host; upgrade required');
+
+    expect(await whyNoConnection(url)).toBe(`The host at ${url} answered 503 Service Unavailable: This tunnel serves a specific agent host; upgrade required.`);
+  });
+
+  it('drops a page, and a body too long to be one sentence', async () => {
+    const page = await serveBody(503, '<html>sign in</html>', 'text/html');
+    expect(await whyNoConnection(page)).toBe(`Could not reach ${page}: 503 Service Unavailable. If it is running, check the connection token.`);
+    await stop();
+    const long = await serveBody(503, 'x'.repeat(201), 'text/plain');
+    expect(await whyNoConnection(long)).toBe(`Could not reach ${long}: 503 Service Unavailable. If it is running, check the connection token.`);
+  });
+});
+
 describe('a connection that failed says which failure it was', () => {
   it('says the host refused the token on a 401, and asks with the token', async () => {
     const { url, asked } = await serve(401, 'Unauthorized');

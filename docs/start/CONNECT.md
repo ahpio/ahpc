@@ -65,6 +65,46 @@ AHPC_TUNNEL_TOKEN=<connect token> ahpc --host tunnel:l3rs99qw.usw2 --token <toke
 
 A connect token lasts 24 hours. When the tunnel refuses it, ahpc stops and says how to get a new one.
 
+#### Signed in
+
+Sign in to Dev Tunnels once, with a code that GitHub shows you, and list the tunnels with an agent host:
+
+```sh
+ahpc tunnel login
+ahpc tunnel list
+```
+
+Signed in, `tunnel:<id>` reaches a tunnel with no cluster and no connect token. ahpc asks the tunnel service for a fresh connect token each time it connects:
+
+```sh
+ahpc --host tunnel:l3rs99qw
+```
+
+With no token of your own, ahpc sends the token VS Code derives from the tunnel id, as VS Code does. Your sign-in is the check, so this works only signed in, never on an anonymous tunnel.
+
+The sign-in is kept in `tunnel.json` beside the config file, readable only by you. `ahpc tunnel logout` removes it.
+
+To reach a tunnel that another person owns, ask the owner for access, such as `devtunnel access create <id> --org <org>` for a GitHub organization.
+
+`--tunnel-access`, or `tunnelAccess` in the config file, picks the way in:
+
+| Value | |
+| --- | --- |
+| `auto` | Anonymous when the address has a cluster and you gave your own token, signed in otherwise. When the tunnel asks for a sign-in, ahpc signs in. The default |
+| `anonymous` | Only the port URL, with your own token |
+| `signed-in` | Only through your sign-in |
+
+#### A VS Code tunnel
+
+VS Code's own tunnel is reached signed in, as any other. A tunnel labelled `protocolv6` or higher can serve more than one agent host, so ahpc picks one on each connection. A tunnel bound to one agent host, such as the editor's own, always gets that host.
+
+`--tunnel-host`, or `tunnelHost` in the config file, picks the agent host on a tunnel that is not bound to one:
+
+| Value | |
+| --- | --- |
+| `editor` | The editor's own agent host when it runs, else a standalone one. The default |
+| `dedicated` | A standalone agent host, which the tunnel starts when none runs |
+
 ## Protected resources
 
 Some hosts protect a resource, such as a model API, and ask the client for a token for it. `ahpc auth` lists what the host protects, and `ahpc auth <resource>` sends a token:

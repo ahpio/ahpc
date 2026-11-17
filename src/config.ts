@@ -1,6 +1,9 @@
 /** What this client was told before anybody typed a flag. */
 
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { TUNNEL_ACCESS, type TunnelAccess } from './ahp/tunnel.js';
+import { TUNNEL_HOSTS, type TunnelHost } from './ahp/gateway.js';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
@@ -20,6 +23,18 @@ export interface Config {
    * `token` is not.
    */
   connectionTokenFile?: string;
+  /**
+   * How a `tunnel:` host is reached: `auto`, `anonymous` or `signed-in`.
+   *
+   * `auto` goes anonymous when the address names a cluster and there is a
+   * token of your own, and signs in otherwise. `--tunnel-access` wins over it.
+   */
+  tunnelAccess?: string;
+  /**
+   * The agent host to pick on a VS Code tunnel not bound to one: `editor` or
+   * `dedicated`. `--tunnel-host` wins over it.
+   */
+  tunnelHost?: string;
   /**
    * The folders this client tells the host it trusts.
    *
@@ -101,6 +116,20 @@ export const statePath = (tool: string, file: string): string =>
   join(configHome(), tool, file);
 
 /**
+ * Write a file only its owner may read, for a file that holds a secret.
+ *
+ * Mode `0600`, in a folder made with `0700`. Written to a temporary file in the
+ * same folder and renamed over the old one, so a reader never sees half a file
+ * and a crash leaves the old file whole.
+ */
+export function writePrivate(path: string, text: string): void {
+  mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
+  const temporary = `${path}.${randomUUID()}.tmp`;
+  writeFileSync(temporary, text, { mode: 0o600 });
+  renameSync(temporary, path);
+}
+
+/**
  * The folder each config file was read from.
  *
  * A path written in the file means a file beside it, not a file beside
@@ -170,6 +199,30 @@ export function connectionToken(
     return readTokenFile(configTokenPath(file.connectionTokenFile, configFolders.get(file)));
   }
   return file.token;
+}
+
+/**
+ * The way in to a tunnel host: the flag, then the config file, then `auto`.
+ *
+ * Both front ends resolve it here, and a value that is not one of the three is
+ * refused with a sentence rather than read as `auto`.
+ */
+export function tunnelAccessOf(said: string | undefined, file: Config): TunnelAccess {
+  const value = said ?? file.tunnelAccess ?? 'auto';
+  const found = TUNNEL_ACCESS.find((one) => one === value);
+  if (found === undefined) throw new Error(`Tunnel access is auto, anonymous or signed-in, not ${value}.`);
+  return found;
+}
+
+/**
+ * The agent host to pick on a VS Code tunnel: the flag, then the config file,
+ * then `editor`. Any other value is refused with a sentence.
+ */
+export function tunnelHostOf(said: string | undefined, file: Config): TunnelHost {
+  const value = said ?? file.tunnelHost ?? 'editor';
+  const found = TUNNEL_HOSTS.find((one) => one === value);
+  if (found === undefined) throw new Error(`Tunnel host is editor or dedicated, not ${value}.`);
+  return found;
 }
 
 /**
