@@ -61,8 +61,9 @@ This brief covers hosts a person names and saves.
 ## Who writes
 
 - ahpc: no pull request is open, and no unmerged branch touches `src/config.ts`, `src/cli/main.ts` or `src/tui.tsx`.
-- [ahpc connects through a Dev Tunnel](ahpc-connects-through-a-private-dev-tunnel.md) changes the same two places that read the host.
-  That brief is built first, and a saved server can then hold a `tunnel:` address.
+- Two tunnel plans change `src/connect.ts` and both places that read the host.
+  They are [a tunnel host is reached by address](../plans/ahp/20261117-0551-a-tunnel-host-is-reached-by-address/plan.md) and [ahpc signs in to Dev Tunnels](../plans/ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md).
+  They are built first, and a saved server can then hold a `tunnel:` address.
 
 ## The change
 
