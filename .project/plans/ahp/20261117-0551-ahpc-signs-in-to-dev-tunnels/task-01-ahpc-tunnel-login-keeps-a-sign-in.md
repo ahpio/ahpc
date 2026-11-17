@@ -20,6 +20,7 @@ refs:
 ## Files
 
 - `CREATE: src/ahp/devtunnels.ts` - the client id, the scope, `login`, `logout`, `signedIn` and the refresh.
+- `UPDATE: src/config.ts:100` - `writePrivate(path, text)`, a file with mode `0600` written through a temporary file and a rename.
 - `UPDATE: src/flags.ts:26-33` - `tunnel` joins `COMMANDS`.
 - `UPDATE: src/cli/main.ts` - `tunnel login` and `tunnel logout`, and their usage lines.
 - `CREATE: test/devtunnels.test.ts` - the device flow, the file and its mode, the refresh and the logout, with `fetch` stubbed.
@@ -32,16 +33,17 @@ refs:
 4. Pass the user code and the verification URL to `say`, so the command prints them.
 5. Poll `https://github.com/login/oauth/access_token` at the interval GitHub gives, and slow down on `slow_down`.
 6. Read the account from `https://api.github.com/user` with the new token.
-7. Write `{ account, token, refreshToken, expiresAt }` to `signInPath()` with mode `0600`, through a temporary file and a rename.
-8. Export `logout()`, which removes `signInPath()` and says whether there was a sign-in.
-9. Export `signedIn()`, which reads the file and returns `undefined` when there is none.
-10. When the token expires within a minute, refresh it with `grant_type=refresh_token`, write the new pair, and return the new token.
-11. In `src/cli/main.ts`, add `tunnel login` and `tunnel logout`, and print the account after a login.
-12. Add both to the usage text under a new *Tunnels* group.
-13. In `test/devtunnels.test.ts`, stub `fetch` with the GitHub answers, and set `XDG_CONFIG_HOME` to a temporary folder.
-14. Assert the file's contents and that its mode is `0600`.
-15. Assert that `signedIn` refreshes an expired token and writes the new pair.
-16. Assert that `logout` removes the file.
+7. In `src/config.ts`, export `writePrivate(path, text)`: make the folder, write a temporary file with mode `0600`, and rename it.
+8. Write `{ account, token, refreshToken, expiresAt }` to `signInPath()` with `writePrivate`.
+9. Export `logout()`, which removes `signInPath()` and says whether there was a sign-in.
+10. Export `signedIn()`, which reads the file and returns `undefined` when there is none.
+11. When the token expires within a minute, refresh it with `grant_type=refresh_token`, write the new pair, and return the new token.
+12. In `src/cli/main.ts`, add `tunnel login` and `tunnel logout`, and print the account after a login.
+13. Add both to the usage text under a new *Tunnels* group.
+14. In `test/devtunnels.test.ts`, stub `fetch` with the GitHub answers, and set `XDG_CONFIG_HOME` to a temporary folder.
+15. Assert the file's contents and that its mode is `0600`.
+16. Assert that `signedIn` refreshes an expired token and writes the new pair.
+17. Assert that `logout` removes the file.
 
 ## Validation
 

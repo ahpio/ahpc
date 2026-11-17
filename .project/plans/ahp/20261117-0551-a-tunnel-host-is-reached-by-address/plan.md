@@ -123,4 +123,4 @@ The files read and the patterns to reuse are the `refs` in the frontmatter, each
 - [ ] `--tunnel-token` or `AHPC_TUNNEL_TOKEN` puts both headers on the upgrade and on the GET that reads a refusal.
 - [ ] A refused connect token ends the reconnect loop, and the sentence names `devtunnel token <id> --scopes connect` and `AHPC_TUNNEL_TOKEN`.
 - [ ] `npm run typecheck` and `npm test` pass.
-- [ ] `docs/start/CONNECT.md`, `docs/reference/CLI.md` and `docs/reference/ENVIRONMENT.md` describe the tunnel address and the flag.
+- [ ] `docs/start/CONNECT.md`, `docs/reference/ENVIRONMENT.md` and the usage text describe the tunnel address and the flag.

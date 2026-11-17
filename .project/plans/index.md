@@ -61,8 +61,8 @@ Reference: [00-ahp.md](ahp/00-ahp.md)
 | [20261104-0734 - The comments on a refused act agree with the spec, and a retry is tested](ahp/20261104-0734-the-retry-comments-agree-with-the-spec/plan.md) | medium | built 2026-11-04 ([implemented.md](ahp/20261104-0734-the-retry-comments-agree-with-the-spec/implemented.md)) | ahp/20261104-0734-a-refused-command-names-the-variable | - |
 | [20261104-0734 - The sign-in prompt answers the ask it was opened for, sends once, and settles on close](ahp/20261104-0734-the-sign-in-prompt-settles-its-edges/plan.md) | medium | built 2026-11-04 ([implemented.md](ahp/20261104-0734-the-sign-in-prompt-settles-its-edges/implemented.md)) | ahp/20261104-0734-the-retry-comments-agree-with-the-spec | - |
 | [20261115-0721 - ahpc speaks protocol 1.1.0](ahp/20261115-0721-protocol-1-1-0/plan.md) | high | built 2026-11-16 ([implemented.md](ahp/20261115-0721-protocol-1-1-0/implemented.md)) | ahp/05, ahp/08 | - |
-| [20261117-0551 - A host behind a Dev Tunnel is reached by its tunnel address](ahp/20261117-0551-a-tunnel-host-is-reached-by-address/plan.md) | high | draft | - | ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels |
-| [20261117-0551 - ahpc signs in to Dev Tunnels and reaches a private tunnel](ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md) | high | draft | ahp/20261117-0551-a-tunnel-host-is-reached-by-address | - |
+| [20261117-0551 - A host behind a Dev Tunnel is reached by its tunnel address](ahp/20261117-0551-a-tunnel-host-is-reached-by-address/plan.md) | high | draft | - | ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels, cli/20261117-0752-ahpc-keeps-named-servers |
+| [20261117-0551 - ahpc signs in to Dev Tunnels and reaches a private tunnel](ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md) | high | draft | ahp/20261117-0551-a-tunnel-host-is-reached-by-address | cli/20261117-0752-ahpc-keeps-named-servers |
 
 Next free number in `ahp`: `09`.
 
@@ -80,6 +80,7 @@ Reference: [00-cli.md](cli/00-cli.md)
 | [06 - The automation list is served by default, the other groups are named, and all turns on every group](cli/06-mcp-tool-groups-are-found-and-all-is-one-word/plan.md) | medium | built 2026-11-04 ([implemented.md](cli/06-mcp-tool-groups-are-found-and-all-is-one-word/implemented.md)) | - | - |
 | [20261104-1112 - MCP over stdio answers each call when it is done](cli/20261104-1112-mcp-over-stdio-answers-at-the-same-time/plan.md) | high | active 2026-11-04; tasks 01-02 implemented, awaiting review | - | - |
 | [20261104-1621 - Automations are made, changed, copied and moved from the shell](cli/20261104-1621-automations-are-made-from-the-shell/plan.md) | medium | built 2026-11-04 ([implemented.md](cli/20261104-1621-automations-are-made-from-the-shell/implemented.md)) | - | documentation/20261104-1621-the-docs-pictures-come-from-a-demo-host |
+| [20261117-0752 - ahpc keeps named servers](cli/20261117-0752-ahpc-keeps-named-servers/plan.md) | medium | draft | ahp/20261117-0551-a-tunnel-host-is-reached-by-address, ahp/20261117-0551-ahpc-signs-in-to-dev-tunnels | - |
 
 Next free number in `cli`: `07`.
 

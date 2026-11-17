@@ -6,7 +6,7 @@ depends:
 layer: "docs"
 refs:
   - "[code://docs/start/CONNECT.md](../../../../docs/start/CONNECT.md) - the connection guide; *A host on another machine* is where a tunnel belongs"
-  - "[code://docs/reference/CLI.md](../../../../docs/reference/CLI.md) - the flag list"
+  - "[code://src/cli/main.ts#L174-L182](../../../../src/cli/main.ts#L174-L182) - the usage text's *The host* group; the CLI page is built from it"
   - "[code://docs/reference/ENVIRONMENT.md](../../../../docs/reference/ENVIRONMENT.md) - the variable table"
 ---
 
@@ -18,7 +18,7 @@ They name the address, the person's own token, and a connect token from the tunn
 ## Files
 
 - `UPDATE: docs/start/CONNECT.md` - a subsection *A host behind a Dev Tunnel* under *A host on another machine*.
-- `UPDATE: docs/reference/CLI.md` - `--host tunnel:<id>.<cluster>` and `--tunnel-token`.
+- `UPDATE: src/cli/main.ts:174-182` - the `--host` line names `tunnel:<id>.<cluster>`; the CLI page is built from this text.
 - `UPDATE: docs/reference/ENVIRONMENT.md` - a row for `AHPC_TUNNEL_TOKEN`.
 
 ## Steps
@@ -28,13 +28,13 @@ They name the address, the person's own token, and a connect token from the tunn
 3. Say that an anonymous tunnel still needs the person's own token for the host.
 4. Say that a private tunnel takes a connect token from `devtunnel token <id> --scopes connect`, through `--tunnel-token` or `AHPC_TUNNEL_TOKEN`.
 5. Say that a connect token lasts 24 hours, and that ahpc stops when it has expired.
-6. Add `--tunnel-token` to `docs/reference/CLI.md` beside `--token`.
+6. In the usage text, add `tunnel:<id>.<cluster>` to the `--host` line.
 7. Add `AHPC_TUNNEL_TOKEN` to `docs/reference/ENVIRONMENT.md`, and say that `--tunnel-token` wins over it.
 8. Keep each file's own wrap and style.
 
 ## Validation
 
-- `rg -n "tunnel" docs/start/CONNECT.md docs/reference/CLI.md docs/reference/ENVIRONMENT.md` finds each new part.
-- `npm run docs:build` passes.
+- `rg -n "tunnel" docs/start/CONNECT.md docs/reference/ENVIRONMENT.md src/cli/main.ts` finds each new part.
+- `npm run docs:build` passes, and the CLI page shows `tunnel:` and `--tunnel-token`.
 
 ## Resume
