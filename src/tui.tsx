@@ -78,6 +78,8 @@ interface Options {
   token?: string;
   /** A file holding that token, named by `--connection-token-file`. */
   tokenFile?: string;
+  /** A connect token for a `tunnel:` host, from `--tunnel-token` or `AHPC_TUNNEL_TOKEN`. */
+  tunnelToken?: string;
   /** Read this config instead of the one XDG names. */
   configFile?: string;
   /** Keys from the config file, over the ones this client ships with. */
@@ -237,6 +239,7 @@ export function parse(argv: string[]): Options {
       case '--host': options.host = String(argv[++i]); break;
       case '--token': options.token = String(argv[++i]); break;
       case '--connection-token-file': options.tokenFile = String(argv[++i]); break;
+      case '--tunnel-token': options.tunnelToken = String(argv[++i]); break;
       case '--config-file': options.configFile = String(argv[++i]); break;
       case '--path': options.path = String(argv[++i]); break;
       // Read below rather than here: `--trust` is not a folder of its own,
@@ -439,6 +442,7 @@ export async function tui(argv: string[]): Promise<void> {
    */
   const file = loadConfig('ahpc', options.configFile);
   options.host = options.host ?? process.env.AHPC_HOST ?? file.host;
+  options.tunnelToken = options.tunnelToken ?? (process.env.AHPC_TUNNEL_TOKEN || undefined);
   /*
    * A token file that was named and cannot be read is a sentence for the
    * person who named it, not a crash to read a stack trace through. The shell

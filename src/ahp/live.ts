@@ -49,6 +49,13 @@ export interface LiveHostOptions {
   url: string;
   /** A bearer token, if the host is behind one. Appended as `?tkn=`. */
   token?: string;
+  /**
+   * HTTP headers on the socket's upgrade request.
+   *
+   * What a Dev Tunnel reads a connect token from. Absent or empty opens the
+   * socket with no header of its own, as a browser would.
+   */
+  headers?: Record<string, string>;
   clientId?: string;
   /**
    * A file every frame is appended to, both directions, one JSON line each.
@@ -311,11 +318,71 @@ interface Loaded {
   RpcError: new (code: number, message: string, data?: unknown) => Error;
   Mirror: new () => Mirror;
   connect(url: string): Promise<unknown>;
+  /** Wrap a socket that is already open, so its upgrade could carry headers. */
+  fromSocket(socket: WebSocket): unknown;
   automationReducer(state: unknown, action: unknown): unknown;
   chatReducer(state: unknown, action: unknown): unknown;
   sessionReducer(state: unknown, action: unknown): unknown;
   terminalReducer(state: unknown, action: unknown): unknown;
   changesetReducer(state: unknown, action: unknown): unknown;
+}
+
+/**
+ * A failed attempt that no retry can fix, thrown by an opener.
+ *
+ * The reconnect loop ends on it, and its message is the sentence the person
+ * reads: a refused connect token is refused again on every attempt, so trying
+ * until the host is back would never end.
+ */
+export class StopRetrying extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StopRetrying';
+  }
+}
+
+/**
+ * Open a socket whose upgrade carries `headers`.
+ *
+ * The package's own `connect` takes a URL only, so the socket is opened here
+ * and handed over once it is open. Node's `WebSocket` reads `headers` from its
+ * second argument; a browser's would not, and ahpc does not run in one.
+ */
+function openWithHeaders(ahp: Loaded, url: string, headers: Record<string, string>): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const Socket = WebSocket as unknown as new (url: string, options: { headers: Record<string, string> }) => WebSocket;
+    const socket = new Socket(url, { headers });
+    const done = (): void => {
+      socket.removeEventListener('open', opened);
+      socket.removeEventListener('error', failed);
+      socket.removeEventListener('close', failed);
+    };
+    const opened = (): void => { done(); resolve(ahp.fromSocket(socket)); };
+    const failed = (): void => { done(); reject(new Error(`WebSocket to ${url} did not open`)); };
+    socket.addEventListener('open', opened);
+    socket.addEventListener('error', failed);
+    socket.addEventListener('close', failed);
+  });
+}
+
+/**
+ * What opens a socket to a host, once per attempt.
+ *
+ * The token goes in `?tkn=`, and the headers, when there are any, go on the
+ * upgrade. `liveHost` uses this when it is given no opener of its own, and a
+ * caller that wraps an attempt calls it to get the same socket.
+ */
+export async function socketOpener(
+  options: Pick<LiveHostOptions, 'url' | 'token' | 'headers'>,
+): Promise<() => Promise<unknown>> {
+  const ahp = await load();
+  const endpoint = options.token
+    ? `${options.url}${options.url.includes('?') ? '&' : '?'}tkn=${encodeURIComponent(options.token)}`
+    : options.url;
+  const headers = options.headers ?? {};
+  return Object.keys(headers).length > 0
+    ? () => openWithHeaders(ahp, endpoint, headers)
+    : () => ahp.connect(endpoint);
 }
 
 export class MissingProtocolPackage extends Error {
@@ -546,7 +613,10 @@ async function load(): Promise<Loaded> {
     const core = await import(base) as Record<string, never>;
     const client = await import(`${base}/client`) as Record<string, never>;
     const ws = await import(`${base}/ws`) as Record<string, never>;
-    const transport = ws.WebSocketTransport as unknown as { connect(url: string): Promise<unknown> };
+    const transport = ws.WebSocketTransport as unknown as {
+      connect(url: string): Promise<unknown>;
+      fromSocket(socket: WebSocket): unknown;
+    };
     return {
       Client: client.AhpClient as unknown as Loaded['Client'],
       createResourceRequestHandler:
@@ -554,6 +624,7 @@ async function load(): Promise<Loaded> {
       RpcError: client.RpcError as unknown as Loaded['RpcError'],
       Mirror: client.AhpStateMirror as unknown as Loaded['Mirror'],
       connect: (url) => transport.connect(url),
+      fromSocket: (socket) => transport.fromSocket(socket),
       automationReducer: core.automationReducer as unknown as Loaded['automationReducer'],
       chatReducer: core.chatReducer as unknown as Loaded['chatReducer'],
       sessionReducer: core.sessionReducer as unknown as Loaded['sessionReducer'],
@@ -1542,9 +1613,6 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
   close(): Promise<void>;
 }> {
   const ahp = await load();
-  const endpoint = options.token
-    ? `${options.url}${options.url.includes('?') ? '&' : '?'}tkn=${encodeURIComponent(options.token)}`
-    : options.url;
 
   let state: 'connecting' | 'connected' | 'offline' = 'connecting';
   const moveTo = (next: typeof state): void => { state = next; options.onState?.(next); };
@@ -1558,7 +1626,7 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
    * was first used on.
    */
   const clientId = options.clientId ?? `ahpc-${randomUUID().slice(0, 8)}`;
-  const openTransport = options.connect ?? (() => ahp.connect(endpoint));
+  const openTransport = options.connect ?? await socketOpener(options);
   const wiring = { ...(options.wire !== undefined ? { file: options.wire } : {}), peer: options.url };
   const backoff = options.backoff ?? BACKOFF;
   const keepaliveMs = options.keepaliveMs ?? KEEPALIVE_MS;
@@ -2001,6 +2069,11 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
           break;
         }
         catch (error) {
+          if (error instanceof StopRetrying) {
+            moveTo('offline');
+            options.onRefusal?.(options.url, error.message, 'read');
+            return;
+          }
           // The host is not back yet, or would not have us back. Either way
           // the caller hears why before the next attempt.
           options.onRetryFailed?.(error);

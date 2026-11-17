@@ -172,11 +172,15 @@ Anything else
   help                         this
 
 The host
-  --host <url>    ws://host:port, or AHPC_HOST, or the config file
+  --host <url>    ws://host:port, or tunnel:<id>.<cluster> for a host behind
+                  a Dev Tunnel, or AHPC_HOST, or the config file
   --token <tkn>   a bearer token for it, or AHPC_TOKEN, or the config file
   --connection-token-file <p>
                   read the token from this file, which is what the host
                   writes when it is given the same flag
+  --tunnel-token <t>
+                  a connect token for a private tunnel, from
+                  devtunnel token <id> --scopes connect, or AHPC_TUNNEL_TOKEN
   --config-file   read this instead of the one below
   (none)          the scripted host, which needs nothing installed
 
@@ -272,9 +276,11 @@ export const where = (rest: string[]): Where => {
     }, file);
   }
   catch (error) { throw new Fault(error instanceof Error ? error.message : String(error)); }
+  const tunnelToken = args.value('--tunnel-token') ?? (process.env.AHPC_TUNNEL_TOKEN || undefined);
   return {
     ...(host ? { host } : {}),
     ...(token ? { token } : {}),
+    ...(tunnelToken ? { tunnelToken } : {}),
     ...(args.value('--cwd') ? { path: args.value('--cwd') as string } : {}),
     // What this client serves back to the host, and whether the host may
     // write into it. Both off unless asked for.

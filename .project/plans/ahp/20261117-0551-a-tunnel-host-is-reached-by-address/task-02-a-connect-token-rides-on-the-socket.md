@@ -1,6 +1,6 @@
 ---
 title: A connect token rides on the socket
-status: todo
+status: done
 depends:
   - task-01-a-tunnel-address-opens-its-port-url.md
 layer: "ahp"

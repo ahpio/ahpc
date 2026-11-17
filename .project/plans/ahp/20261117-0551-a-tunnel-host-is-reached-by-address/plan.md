@@ -1,7 +1,7 @@
 ---
 title: A host behind a Dev Tunnel is reached by its tunnel address
 domain: ahp
-status: draft
+status: built
 priority: high
 created: 2026-11-17
 revalidated: 2026-11-17
@@ -96,10 +96,10 @@ The files read and the patterns to reuse are the `refs` in the frontmatter, each
 
 | Task | Status | Depends on |
 | --- | --- | --- |
-| [01 - A tunnel address opens its port URL](task-01-a-tunnel-address-opens-its-port-url.md) | todo | - |
-| [02 - A connect token rides on the socket](task-02-a-connect-token-rides-on-the-socket.md) | todo | 01 |
-| [03 - A refused tunnel stops and says how](task-03-a-refused-tunnel-stops-and-says-how.md) | todo | 02 |
-| [04 - The docs say how to reach a tunnel](task-04-the-docs-say-how-to-reach-a-tunnel.md) | todo | 03 |
+| [01 - A tunnel address opens its port URL](task-01-a-tunnel-address-opens-its-port-url.md) | done | - |
+| [02 - A connect token rides on the socket](task-02-a-connect-token-rides-on-the-socket.md) | done | 01 |
+| [03 - A refused tunnel stops and says how](task-03-a-refused-tunnel-stops-and-says-how.md) | done | 02 |
+| [04 - The docs say how to reach a tunnel](task-04-the-docs-say-how-to-reach-a-tunnel.md) | done | 03 |
 
 ## Risks and tradeoffs
 
@@ -111,8 +111,8 @@ The files read and the patterns to reuse are the `refs` in the frontmatter, each
 
 ## Resume state
 
-- **Done so far:** nothing.
-- **Next action:** [task-01-a-tunnel-address-opens-its-port-url.md](task-01-a-tunnel-address-opens-its-port-url.md).
+- **Done so far:** tasks 01 to 04, as [implemented.md](implemented.md) says.
+- **Next action:** review, then the check by hand in [a-tunnel-host-is-reached-by-address.md](../../../pending/a-tunnel-host-is-reached-by-address.md).
 - **Open questions:** none; every row in *Answers* is the user's or defaulted, and the user may erase a defaulted one.
 - **Watch out for:** the derived token is not built in this plan; it belongs to [the sign-in plan](../20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md).
 

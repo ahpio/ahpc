@@ -1,6 +1,6 @@
 ---
 title: The docs say how to reach a tunnel
-status: todo
+status: done
 depends:
   - task-03-a-refused-tunnel-stops-and-says-how.md
 layer: "docs"
