@@ -114,7 +114,7 @@ ahpc tunnel login -> device code -> GitHub -> tunnel.json (0600)
 ## Resume state
 
 - **Done so far:** tasks 01 to 05, as [implemented.md](implemented.md) says.
-- **Next action:** review, then the check by hand in [ahpc-signs-in-to-dev-tunnels.md](../../../pending/ahpc-signs-in-to-dev-tunnels.md).
+- **Next action:** none; the check by hand passed on 2026-11-18.
 - **Open questions:** none; every row in *Answers* is the user's or defaulted, and the user may erase a defaulted one.
 - **Watch out for:** never send the derived token on the anonymous way; the ahpd problem file:///github/ahpd/.project/problems/an-anonymous-tunnel-admits-the-derived-token.md says why.
 

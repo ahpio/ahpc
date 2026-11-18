@@ -43,7 +43,10 @@ A VS Code tunnel at `protocolv6` is reached through its gateway, and `--tunnel-h
 - `curl` with no token: the list URL answered 401, and the URL of a tunnel that does not exist answered 404.
 - By hand: `tunnel login` printed a GitHub device code; `tunnel list` and `--host tunnel:<id>` with no sign-in printed their sentences and exited 1.
 - By hand: `--tunnel-access bogus` printed `Tunnel access is auto, anonymous or signed-in, not bogus.` and exited 1.
-- Not run: a signed-in connection to ahpd's tunnel, a reconnect, and `tunnelHost` on a tunnel not bound to one. The checks wait in [ahpc-signs-in-to-dev-tunnels.md](../../../pending/ahpc-signs-in-to-dev-tunnels.md).
+- By hand on 2026-11-18, a fresh `tunnel login` signed in, and `tunnel.json` had mode `600`.
+  ahpd's tunnel and VS Code's answered by address, and the screen came back after ahpd restarted.
+  `auto` fell back to signed-in, and logout asked for a new sign-in.
+- Not run: `tunnelHost` on a tunnel not bound to one, because no such tunnel was at hand.
 
 ## Departures from the plan
 
