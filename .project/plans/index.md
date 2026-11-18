@@ -15,6 +15,7 @@ Reference: [00-screen.md](screen/00-screen.md)
 
 | Plan | Priority | Status | Requires | Blocks |
 | --- | --- | --- | --- | --- |
+| [20261118-0214 - ahpc remembers the last agent and model per host](screen/20261118-0214-ahpc-remembers-the-last-agent-and-model/plan.md) | medium | planned | screen/20261117-2247-the-hosts-screen-shows-the-host | - |
 | [20261117-2247 - The hosts screen scrolls and shows the host](screen/20261117-2247-the-hosts-screen-shows-the-host/plan.md) | medium | planned | - | - |
 | [01 - Telling somebody the version is old](screen/01-update-check/plan.md) | medium | built 2026-09-18 ([implemented.md](screen/01-update-check/implemented.md)) | ahpd daemon/01 for the shared comparison table | - |
 | [02 - Three corrections to what a chat turn draws](screen/02-turn-details/plan.md) | high | built 2026-09-20 ([implemented.md](screen/02-turn-details/implemented.md)) | - | - |
