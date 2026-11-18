@@ -46,9 +46,15 @@ export async function whyNoConnection(url: string, token?: string, tunnel?: Thro
   }
   // A body left unread holds the socket open until the connection is
   // collected, so it is read when it can say why, and dropped otherwise.
-  const said = await shortText(response);
+  const { said, empty } = await shortText(response);
   if (tunnel !== undefined && response.status >= 300 && response.status < 400) {
     return tunnelRefused(tunnel.host, tunnel.id, tunnel.headers !== undefined);
+  }
+  // A tunnel refuses a connect token with a bare 401, and a host refuses its
+  // own token with a 401 that says so: ahpd writes a sentence and a
+  // `WWW-Authenticate`. An empty one is the tunnel's, when it had a token.
+  if (response.status === 401 && empty && tunnel?.headers !== undefined) {
+    return tunnelRefused(tunnel.host, tunnel.id, true);
   }
   if (response.status === 401) {
     return token === undefined
@@ -67,22 +73,24 @@ const QUOTED_LENGTH = 200;
 
 /**
  * A failed answer's own reason, when its body is one short line of text
- * with no type or `text/plain`.
+ * with no type or `text/plain`, and whether the body was empty.
  *
  * A VS Code tunnel answers its root route with 503 and the sentence
  * `This tunnel serves a specific agent host; upgrade required`, which says
- * more than the status does. Any other body is dropped unread.
+ * more than the status does. Any other body is dropped unread. An empty body
+ * is told apart from a dropped one, because a tunnel's refusal is empty.
  */
-async function shortText(response: Response): Promise<string | undefined> {
+async function shortText(response: Response): Promise<{ said?: string; empty: boolean }> {
   // The VS Code CLI names no type for its sentence; a page names `text/html`.
   const type = response.headers.get('content-type') ?? '';
   const plain = type === '' || type.startsWith('text/plain');
   if (response.ok || !plain) {
     await response.body?.cancel();
-    return undefined;
+    return { empty: false };
   }
   const text = (await response.text()).trim().replace(/\.$/, '');
-  return text !== '' && text.length <= QUOTED_LENGTH && !text.includes('\n') ? text : undefined;
+  if (text === '') return { empty: true };
+  return text.length <= QUOTED_LENGTH && !text.includes('\n') ? { said: text, empty: false } : { empty: false };
 }
 
 /**
