@@ -71,6 +71,8 @@ hosts.show -> screens.push('hosts') -> HostsScreen
 | A click opens an agent through textui: `Tree` opens or closes a row with children on a click, released in textui, and ahpc moves to that release | Softov, 2026-11-17: "Click opens in textui's Tree" | 03 |
 | The page follows the two mockups in this folder: [mockup-01-top.png](mockup-01-top.png) and [mockup-02-agents.png](mockup-02-agents.png) | Softov, 2026-11-17: "write the brief", after he saw both | 02, 03 |
 | `n` starts a new session with the selected agent | (defaulted: ahpw's chat button; in the mockup Softov saw) | 03 |
+| `n` on a model's row also chooses that model; on an agent's row the host's default stands | Softov, 2026-11-17: "it select the agent but does not select the model"; "The host's default" | 03 |
+| A section's rows are a textui `Grid`: two pairs to a line wider than `SPLIT_AT`, one below it, with one label width for the page | Softov, 2026-11-17: "can it align the host info?"; "KeyValue, halves in ahpc"; "you forget to make it responsive" | 02 |
 | The address shows once, on the first line | (defaulted: in the mockup Softov saw) | 02 |
 | The two notes on the scripted and the live host go | (defaulted: the mockup Softov saw has neither) | 02 |
 | A section, or a row, shows only when the host sent its facts | (defaulted: ahpw's `Info.tsx` leaves out what the host did not send) | 02 |

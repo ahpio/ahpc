@@ -53,3 +53,6 @@ It has ahpw's sections, and a section or a row the host sent nothing for is not 
 ## Resume
 
 Done. The controller gained `about()`; the terminals come from the controller's `terminals` service and the `TERMINALS` store. *Connected* shows the clock time and how long ago. The page matches mockup 01 at 110 by 40, and scrolls at 80 by 24.
+
+After review: `KeyValue` with `columns` sized each pair by its value, so the second column moved from line to line.
+Each section also measured its own labels. Each section is now a textui `Grid` of one pair per cell, with one label width for the page. It has two columns wider than `SPLIT_AT` and one below it.

@@ -25,10 +25,12 @@ Its agents open their models on Enter or a click, and `n` starts a new session w
 
 ## Verified
 
-- `test/hosts.test.tsx` passes 7 tests: the sections, a missing section, the scroll, Enter, a click, `n`, and the follow at 80 by 24.
+- `test/hosts.test.tsx` passes 11 tests, from the sections and the scroll to the keys.
+  They cover Enter, a click, `n` on an agent and on a model, the follow, and the columns wide and narrow.
 - `test/live.test.tsx` and `test/fake.test.ts` test `about()` on both hosts, and on a live host that sent nothing.
-- `npm run typecheck`, `npm run docs:build` and `npm test` pass: 54 files, 975 tests.
+- `npm run typecheck` and `npm test` pass: 54 files, 979 tests.
 - The page against the scripted host matches the two mockups at 110 by 40, and scrolls at 80 by 24.
+- At 180 columns the values line up in two columns down the page; at 90 they line up in one.
 - `docs/img/host.svg` is drawn from ahpd's demo host: protocol 1.1.0, server `ahpd`, the build, the machine, one agent and one terminal.
 
 ## Departures from the plan
@@ -40,6 +42,8 @@ Its agents open their models on Enter or a click, and `n` starts a new session w
 - `hosts.newSession` reads the agents before `harness.choose`, which picks from the list its palette last read.
 - The page follows the selected row only after it moves, so it opens at its top.
 - An agent's meta is cut to the width its name leaves, because a long description cut the name of ahpd's demo agent.
+- After review, each section is a textui `Grid` with one label width for the page, two columns wider than `SPLIT_AT` and one below it.
+- After review, `n` on a model's row also chooses that model.
 - The controller had a `terminals` service already, so the page reads the `TERMINALS` store and adds no read of its own.
 
 ## Left for later

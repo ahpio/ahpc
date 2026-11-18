@@ -4,7 +4,7 @@ import type { Harness } from '@textui/testing';
 import { registerChat } from '../src/app.js';
 import { fakeHost } from '../src/ahp/fake.js';
 import type { HostAbout } from '../src/ahp/types.js';
-import { PROVIDER } from '../src/state.js';
+import { MODEL, PROVIDER } from '../src/state.js';
 
 /*
  * The hosts screen: a page of what the host said about itself.
@@ -113,6 +113,56 @@ describe('the agents on the hosts screen', () => {
     await t.press('down');
     for (let i = 0; i < 6; i++) await t.settle();
     expect(t.text()).toContain('Copilot CLI');
+    await t.unmount();
+  });
+
+  it('starts the session with the selected model, when the row is a model', async () => {
+    const t = await mounted({ height: 80 });
+    const model = (await fakeHost().agents())[0]!.models[0]!;
+    await t.press('enter');
+    await t.settle();
+    await t.press('down');
+    await t.settle();
+    await t.press('n');
+    for (let i = 0; i < 8; i++) await t.settle();
+    expect(t.app.screens.current()?.id).toBe('new');
+    expect(t.app.store.get(PROVIDER)).toBe('claude');
+    expect(t.app.store.get(MODEL)).toBe(model.id);
+    await t.unmount();
+  });
+
+  it('leaves the model to the host on an agent row', async () => {
+    const t = await mounted({ height: 80 });
+    await t.press('n');
+    for (let i = 0; i < 8; i++) await t.settle();
+    expect(t.app.store.get(PROVIDER)).toBe('claude');
+    expect(t.app.store.get(MODEL) ?? '').toBe('');
+    await t.unmount();
+  });
+});
+
+describe('the facts on the hosts screen', () => {
+  /** The column a text starts at, on the line that holds it. */
+  const columnOf = (t: Harness, text: string): number => {
+    const line = t.lines().find((one) => one.includes(text));
+    return line === undefined ? -1 : line.indexOf(text);
+  };
+
+  it('lines the values up down the page, two pairs to a line when wide', async () => {
+    const t = await mounted({ width: 160, height: 80 });
+    // The left values, and the right labels, each start in one column.
+    expect(columnOf(t, '1.1.0')).toBe(columnOf(t, 'scripted host'));
+    expect(columnOf(t, '1.1.0')).toBe(columnOf(t, 'linux, x64'));
+    expect(columnOf(t, 'Connected')).toBe(columnOf(t, 'Version'));
+    expect(columnOf(t, 'Connected')).toBe(columnOf(t, 'CPUs'));
+    expect(t.lines().some((line) => line.includes('Protocol') && line.includes('Connected'))).toBe(true);
+    await t.unmount();
+  });
+
+  it('draws one pair to a line when narrow', async () => {
+    const t = await mounted({ width: 70, height: 80 });
+    expect(t.lines().some((line) => line.includes('Protocol') && line.includes('Connected'))).toBe(false);
+    expect(columnOf(t, '1.1.0')).toBe(columnOf(t, 'scripted host'));
     await t.unmount();
   });
 });

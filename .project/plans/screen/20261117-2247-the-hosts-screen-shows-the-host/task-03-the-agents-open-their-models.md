@@ -57,3 +57,5 @@ Besides the files above, this task changed:
 - `src/app.tsx`: the key row of the hosts screen.
 - The page follows the selected row only after it moves, so it opens at its top.
 - An agent's meta is cut to the width its name leaves, because a long description cut the name.
+
+After review: `n` on a model's row also runs `model.choose` with that model. `HOST_AGENT` holds the provider and the model.

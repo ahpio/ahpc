@@ -19,7 +19,7 @@ import {
   useTheme,
 } from '@textui/core';
 import {
-  Badge, Button, Column, Dialog, Divider, EmptyState, Field, Form, FormActions, KeyValue, Marquee, Panel, RadioGroup, Row, ScrollView, SearchBox, Select, Switch, Tabs, TextArea, TextInput, Tree,
+  Badge, Button, Column, Dialog, Divider, EmptyState, Field, Form, FormActions, Grid, KeyValue, Marquee, Panel, RadioGroup, Row, ScrollView, SearchBox, Select, Switch, Tabs, TextArea, TextInput, Tree,
   argumentOf, useForm,
 } from '@textui/widgets';
 import { PRESETS, presetFor, presetLabel, scheduleProblem, zoneIsKnownHere } from './schedule.js';
@@ -2649,6 +2649,21 @@ const HostSection = defineComponent<{ title: string; count?: number; children?: 
   </Column>
 ));
 
+/**
+ * One section's rows, two pairs to a line on a wide screen and one on a
+ * narrow one.
+ *
+ * A `Grid` of one pair per cell: its columns are equal whatever is in them,
+ * where a `KeyValue` with `columns` sized each pair by its value, and the
+ * second column moved from line to line. Every section is given the page's
+ * one label width, so the values line up down the page.
+ */
+const HostFacts = defineComponent<{ items: { label: string; value: string }[]; wide: boolean; labelWidth: number }>('HostFacts', (props) => (
+  <Grid columns={props.wide ? 2 : 1} columnGap={2}>
+    {props.items.map((item) => <KeyValue key={item.label} items={[item]} labelWidth={props.labelWidth} />)}
+  </Grid>
+));
+
 /** The rows that have a value, so a row the host sent nothing for is left out. */
 const rowsOf = (rows: { label: string; value: string | undefined }[]): { label: string; value: string }[] =>
   rows.filter((row): row is { label: string; value: string } => row.value !== undefined && row.value !== '');
@@ -2690,6 +2705,8 @@ export const HostsScreen: (props: Record<string, never>) => RenderOutput =
       void controller.about().then(setAbout).catch(() => undefined);
     }, [Object.keys(catalogue).length]);
 
+    const width = useSize().width;
+    const splitAt = useStoreValue<number>(SPLIT_AT, SPLIT_DEFAULT) ?? SPLIT_DEFAULT;
     const now = Date.now();
     const sinceMs = (at: number): string => since(new Date(at).toISOString(), now, i18n);
 
@@ -2756,6 +2773,10 @@ export const HostsScreen: (props: Record<string, never>) => RenderOutput =
 
     const settings = about?.settings ?? [];
     const trusted = about?.trusted ?? [];
+    // Two halves where the sessions screen opens its side pane, one column
+    // below it, so the page follows the window as the other screens do.
+    const wide = width > splitAt;
+    const labelWidth = Math.max(0, ...[...connection, ...server, ...machine].map((row) => row.label.length));
 
     return (
       <Panel title={i18n.t('screens.hosts.title')} flex={1}>
@@ -2765,17 +2786,17 @@ export const HostsScreen: (props: Record<string, never>) => RenderOutput =
             <Column gap={1}>
               {connection.length > 0 ? (
                 <HostSection title={i18n.t('screens.hosts.connection')}>
-                  <KeyValue items={connection} columns={2} />
+                  <HostFacts items={connection} wide={wide} labelWidth={labelWidth} />
                 </HostSection>
               ) : null}
               {server.length > 0 ? (
                 <HostSection title={i18n.t('screens.hosts.server')}>
-                  <KeyValue items={server} columns={2} />
+                  <HostFacts items={server} wide={wide} labelWidth={labelWidth} />
                 </HostSection>
               ) : null}
               {machine.length > 0 ? (
                 <HostSection title={i18n.t('screens.hosts.machine')}>
-                  <KeyValue items={machine} columns={2} />
+                  <HostFacts items={machine} wide={wide} labelWidth={labelWidth} />
                 </HostSection>
               ) : null}
               {automationLine !== undefined ? (
@@ -2884,7 +2905,8 @@ const HostAgents = defineComponent<{ agents: Agent[]; follow(row: number): void 
   ]);
 
   useEffect(() => {
-    app.store.set(HOST_AGENT, selected.split(MODEL_OF)[0] ?? '');
+    const [provider = '', model] = selected.split(MODEL_OF);
+    app.store.set(HOST_AGENT, { provider, ...(model !== undefined ? { model } : {}) });
   }, [selected]);
   // Not on the first draw: the page opens at its top, and an agents list
   // below the fold would otherwise scroll it there before anyone moved.

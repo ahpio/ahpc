@@ -2252,15 +2252,17 @@ function commands(
       category: app.i18n.t('category.screens'),
       description: app.i18n.t('command.hosts.newSession.description'),
       slots: ['palette'],
-      // A new session, then its agent: the two commands a person would run.
-      // `harness.choose` picks from the agents its list last read, so the
-      // list is read first.
+      // A new session, its agent, and the model when a model's row was
+      // selected: the commands a person would run. `harness.choose` picks
+      // from the agents its list last read, so the list is read first. An
+      // agent's own row chooses no model, and the host's default stands.
       run: async () => {
-        const provider = app.store.get<string>(HOST_AGENT);
-        if (!provider) return;
+        const picked = app.store.get<{ provider: string; model?: string } | null>(HOST_AGENT);
+        if (!picked?.provider) return;
         await app.execute('session.new');
         await listAgents();
-        await app.execute('harness.choose', { id: provider });
+        await app.execute('harness.choose', { id: picked.provider });
+        if (picked.model !== undefined) await app.execute('model.choose', { id: picked.model });
       },
     },
 
