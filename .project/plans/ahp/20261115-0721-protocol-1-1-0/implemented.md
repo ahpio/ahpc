@@ -23,7 +23,8 @@ The queue leaves out a steering message, from a host on any version, so a pendin
 - With the filter removed, the new test fails on the 1.0.0 package. With the filter, `test/reconnect.test.ts` passes 84 tests.
 - On 1.1.0, `npm run typecheck` and `npm run build` pass, and `npm test` passes 50 files, 928 tests.
 - `rg -n 'agent-host-protocol@1\.0\.0|agent-host-protocol-1\.0\.0|AHP-1\.0\.0' package-lock.json deno.lock README.md` finds nothing.
-- Not run: the check against a VS Code host on 1.1.0. It waits in [protocol-1-1-0-against-vs-code.md](../../../pending/protocol-1-1-0-against-vs-code.md).
+- By hand on 2026-11-18, VS Code 1.146.0 answered `1.1.0` through its tunnel in 5 runs of 6.
+  One run read `1.0.0`, and it did not come again.
 
 ## Departures from the plan
 

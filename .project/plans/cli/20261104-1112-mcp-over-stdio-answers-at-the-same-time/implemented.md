@@ -43,6 +43,9 @@ No response goes out for a cancelled request, which is what MCP `2025-06-18` ask
 - Removing `stopTurn`, `unqueue`, the steer distinction, or the pre-send guard made the turn cases fail.
 - The fix was put back after every one.
 
+- By hand on 2026-11-18, against a test ahpd, a `ping` answered while `send_turn` ran.
+  A cancelled `send_turn` got no answer, and its turn showed `cancelled`.
+
 ## Departures from the plan
 
 - Step 13 named `CREATE: .project/ideas/mcp-over-http-stops-a-cancelled-call.md`. The file already existed with the content the step asked for, committed in 163a205, so nothing was created.

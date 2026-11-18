@@ -1,6 +1,6 @@
 ---
 title: A cancelled request stops
-status: implemented
+status: done
 depends: [task-01-each-request-runs-as-it-arrives.md]
 layer: "mcp"
 refs:

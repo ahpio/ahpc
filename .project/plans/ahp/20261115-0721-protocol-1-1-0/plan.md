@@ -99,7 +99,7 @@ unqueue(uri, id) -> chat/pendingMessageRemoved kind queued -> the 1.1.0 reducer 
 ## Resume state
 
 - **Done so far:** tasks 01 and 02, as [implemented.md](implemented.md) says.
-- **Next action:** review, then the check by hand in [protocol-1-1-0-against-vs-code.md](../../../pending/protocol-1-1-0-against-vs-code.md).
+- **Next action:** none; the check by hand passed on 2026-11-18.
 - **Open questions:** none; every row in *Answers* is defaulted except the first, and the user may erase any of them.
 - **Watch out for:** `VERSIONS` is in preference order, and `0.10.0` stays right behind `1.0.0`, as [plan 08](../08-a-vs-code-1-141-host-is-reached-at-0-10-0/plan.md) says.
 

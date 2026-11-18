@@ -4,19 +4,21 @@ title: Set up a test host for the checks by hand
 
 # Set up a test host for the checks by hand
 
-The checks in this folder run ahpc against a test ahpd with its own token, folders and port.
-Each check file starts with these steps.
+The checks in this folder run ahpc against a test ahpd with its own token, folder and port.
+Everything here runs on the Linux machine, the one with `/github/ahpc` and `/github/ahpd`.
 
-## Set up
+## Steps
 
-1. In the ahpd checkout, on `main`, run `pnpm install` and `pnpm build`.
-2. In the ahpc checkout, on `main`, run `npm install` and `npm run build`.
-3. Make an empty folder `<scratch>` with a folder `xdg` in it.
-4. Write a token with `openssl rand -hex 16 > <scratch>/token`.
-5. Write `<scratch>/config.json` as `{"plugins":[{"name":"<ahpd>/packages/agent-claude"}]}`, where `<ahpd>` is the ahpd checkout.
-6. Make a folder `<work>` with `git init`, two committed files and one commit.
-7. In `<work>`, edit one committed file, delete the other, and add one new file.
-8. Start the host with `XDG_CONFIG_HOME=<scratch>/xdg node <ahpd>/packages/server/dist/main.js --port 9313 --config-file <scratch>/config.json --sessions memory --automations memory --no-update-check --connection-token-file <scratch>/token --path <work> --no-cwd`.
-9. Start a session with `node <ahpc>/dist/src/main.js --host ws://127.0.0.1:9313 --connection-token-file <scratch>/token session new --cwd <work>`.
-10. Let `<ahpc>` be `node <ahpc>/dist/src/main.js --host ws://127.0.0.1:9313 --connection-token-file <scratch>/token`.
-11. Let `<session>` be the URI that `session new` printed.
+1. Run `cd /github/ahpd && git switch main && git pull && pnpm install && pnpm build`.
+2. Run `cd /github/ahpc && git switch main && git pull && npm install && npm run build`.
+3. Run `bash /github/ahpc/.project/pending/test-host.sh`.
+4. Paste the two `export` lines it prints into the terminal you check in.
+
+## Pass and fail
+
+- Pass: step 3 prints `host on ws://127.0.0.1:9313` and the two `export` lines, and `$AHPC session list` answers.
+- Fail: step 3 waits 30 s and prints no session; read `/tmp/ahpc-check/host.log`.
+
+## When done
+
+- Run `bash /github/ahpc/.project/pending/test-host.sh stop`. It stops the host and removes `/tmp/ahpc-check`.

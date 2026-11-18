@@ -1,6 +1,6 @@
 ---
 title: Each request runs as it arrives
-status: implemented
+status: done
 depends: []
 layer: "mcp"
 refs:

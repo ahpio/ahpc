@@ -1,7 +1,7 @@
 ---
 title: MCP over stdio answers each call when it is done
 domain: cli
-status: active
+status: built
 priority: high
 created: 2026-11-04
 revalidated: 2026-11-04
@@ -83,8 +83,8 @@ notifications/cancelled -> stdio finds the request in flight -> abort -> no line
 
 | Task | Status | Depends on |
 | --- | --- | --- |
-| [01 - Each request runs as it arrives](task-01-each-request-runs-as-it-arrives.md) | implemented | - |
-| [02 - A cancelled request stops](task-02-a-cancelled-request-stops.md) | implemented | 01 |
+| [01 - Each request runs as it arrives](task-01-each-request-runs-as-it-arrives.md) | done | - |
+| [02 - A cancelled request stops](task-02-a-cancelled-request-stops.md) | done | 01 |
 
 ## Risks and tradeoffs
 
@@ -94,15 +94,15 @@ notifications/cancelled -> stdio finds the request in flight -> abort -> no line
 
 ## Resume state
 
-- **Done so far:** planned 2026-11-04, and tasks 01 and 02 implemented 2026-11-04.
-- **Next action:** Softov reviews the pull request, and checks `ping` by hand as [the pending check](../../../pending/mcp-over-stdio-checks.md) says.
+- **Done so far:** tasks 01 and 02, merged in #22 on 2026-11-04. On 2026-11-18 the check by hand passed against a test ahpd, and Softov accepted it.
+- **Next action:** none.
 - **Open questions:** none.
 - **Watch out for:** the scripted host sends its first snapshot inside `subscribe`, so `until` can finish before `subscribe` returns.
 
 ## Final verification checklist
 
-- [ ] `npm run typecheck`, `npm run build` and `npx vitest run` pass.
-- [ ] A test sends `send_turn` and `ping` together over `stdio`, and gets the `ping` answer first.
-- [ ] A test answers a confirmation with `confirm_tool_call` while `send_turn` waits on it.
-- [ ] A test cancels `send_turn`: no response comes for it, and the host stopped the turn.
-- [ ] By hand, against ahpd, `ahpc mcp` answers `ping` while `send_turn` runs.
+- [x] `npm run typecheck`, `npm run build` and `npx vitest run` pass.
+- [x] A test sends `send_turn` and `ping` together over `stdio`, and gets the `ping` answer first.
+- [x] A test answers a confirmation with `confirm_tool_call` while `send_turn` waits on it.
+- [x] A test cancels `send_turn`: no response comes for it, and the host stopped the turn.
+- [x] By hand, against ahpd, `ahpc mcp` answers `ping` while `send_turn` runs.
