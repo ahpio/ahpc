@@ -60,4 +60,5 @@ What changed in each release: one page for each minor release, with its patch re
 | Page | What it covers |
 | --- | --- |
 | [All releases](updates/archive.md) | Every release, by year |
+| [ahpc 0.11](updates/v0_11.md) | 0.11.0 |
 | [ahpc 0.10](updates/v0_10.md) | 0.10.0 |
