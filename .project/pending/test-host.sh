@@ -10,7 +10,12 @@ PORT=${PORT:-9313}
 S=/tmp/ahpc-check
 
 if [ "${1:-}" = stop ]; then
-  [ -f "$S/host.pid" ] && kill "$(cat "$S/host.pid")" 2>/dev/null || true
+  if [ -f "$S/host.pid" ]; then
+    pid=$(cat "$S/host.pid")
+    kill "$pid" 2>/dev/null || true
+    # The host writes to the folder while it shuts down, so it goes first.
+    for _ in $(seq 1 20); do kill -0 "$pid" 2>/dev/null || break; sleep 0.25; done
+  fi
   rm -rf "$S"
   echo "stopped, $S removed"
   exit 0
