@@ -340,6 +340,23 @@ describe('the scopes are tabs', () => {
         await t.unmount();
       });
 
+      it('steps past the tabs that need a turn with an arrow', async () => {
+        const t = await changes(fakeHost(), width);
+        t.tab();
+        await t.settle();
+        t.press('right');
+        for (let i = 0; i < 10; i++) await t.settle();
+        expect(t.app.store.get<string>(CHANGE_AT)).toBe(TREE);
+        // Past the two that need a turn, and round to the first.
+        t.press('right');
+        for (let i = 0; i < 10; i++) await t.settle();
+        expect(t.app.store.get<string>(CHANGE_AT)).toBe(SESSION);
+        t.press('left');
+        for (let i = 0; i < 10; i++) await t.settle();
+        expect(t.app.store.get<string>(CHANGE_AT)).toBe(TREE);
+        await t.unmount();
+      });
+
       it('keeps ] and r working while a tab has the keyboard', async () => {
         const t = await changes(fakeHost(), width);
         t.tab();
@@ -669,6 +686,9 @@ describe('a dialog asks this file or all files', () => {
         const t = await tree(host, width);
         await t.press('s');
         await settle(t);
+        // From This file, past Cancel and round to the first button.
+        t.tab();
+        await t.settle();
         t.tab();
         await t.settle();
         expect(t.focused()?.label).toBe('All files');
@@ -678,7 +698,7 @@ describe('a dialog asks this file or all files', () => {
         await t.unmount();
       });
 
-      it('reaches all three buttons on Tab, in the order This file, All files, Cancel', async () => {
+      it('draws All files, This file, Cancel, starts on This file, and reaches each on Tab', async () => {
         const { host } = offering([both('unstage')]);
         const t = await tree(host, width);
         await t.press('u');
@@ -690,7 +710,9 @@ describe('a dialog asks this file or all files', () => {
         t.tab();
         await t.settle();
         seen.push(t.focused()?.label);
-        expect(seen).toEqual(['This file', 'All files', 'Cancel']);
+        expect(seen).toEqual(['This file', 'Cancel', 'All files']);
+        const row = t.lines().find((line) => line.includes('This file') && line.includes('All files')) ?? '';
+        expect(row.indexOf('All files')).toBeLessThan(row.indexOf('This file'));
         expect(t.lines().every((line) => line.length <= width)).toBe(true);
         await t.unmount();
       });
@@ -745,6 +767,9 @@ describe('a dialog asks this file or all files', () => {
         expect(t.hasText('This cannot be undone.')).toBe(true);
         expect(t.getByRole('button', { name: 'This file' }).props.fg).toBe('danger');
         expect(t.getByRole('button', { name: 'All files' }).props.fg).toBe('danger');
+        // From This file, past Cancel and round to All files.
+        t.tab();
+        await t.settle();
         t.tab();
         await t.settle();
         await t.press('enter');

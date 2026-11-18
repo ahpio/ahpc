@@ -1531,10 +1531,10 @@ function commands(
   /**
    * Ask whether a verb acts on this file or on every file.
    *
-   * The buttons are This file, All files and Cancel, in that order, and each
-   * shows only when `file` or `all` says it can: the stock dialog focuses its
-   * first action, so This file has the focus when it is there. `danger` is a
-   * host confirmation, which marks the verb destructive.
+   * The buttons are All files, This file and Cancel, in that order, and each
+   * shows only when `file` or `all` says it can. This file is the default
+   * action, so it has the focus when it is there. `danger` is a host
+   * confirmation, which marks the verb destructive.
    */
   const askTarget = (ask: { title: string; message: string; file: boolean; all: boolean; danger: boolean }): Promise<'file' | 'all' | null> =>
     new Promise((resolve) => {
@@ -1558,8 +1558,8 @@ function commands(
           title: ask.title,
           width: 56,
           actions: [
-            ...(ask.file ? [{ id: 'file', label: app.i18n.t('commands.target.file'), tone, onPress: () => finish('file') }] : []),
             ...(ask.all ? [{ id: 'all', label: app.i18n.t('commands.target.all'), tone, onPress: () => finish('all') }] : []),
+            ...(ask.file ? [{ id: 'file', label: app.i18n.t('commands.target.file'), tone, default: true, onPress: () => finish('file') }] : []),
             { id: 'cancel', label: app.i18n.t('commands.target.cancel'), onPress: () => finish(null) },
           ],
           children: { component: 'text', content: ask.message, wrap: 'word' },
