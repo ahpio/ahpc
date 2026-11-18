@@ -160,6 +160,7 @@ export const views: Record<string, string> = {
   'views.app.hintChangeset': 'changeset',
   'views.app.hintDo': 'do',
   'views.app.hintNew': 'new',
+  'views.app.hintNewSessionWith': 'new session with agent',
   'views.app.hintEdit': 'edit',
   'views.app.hintForget': 'forget',
   'views.app.hintDetail': 'detail',

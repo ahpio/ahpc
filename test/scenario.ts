@@ -76,6 +76,8 @@ export class Scripted {
   watchChannel = 'ahp-resource-watch:/default';
   /** What `initialize` advertises under `telemetry`, if anything. */
   telemetry: Record<string, string> | null = null;
+  /** More keys for the `initialize` answer, such as `serverInfo` or `_meta`. */
+  greeting: Record<string, unknown> = {};
   /** An error to refuse a subscribe with, in place of the plain `-32001`. */
   refuseWith: Record<string, unknown> | null = null;
   /**
@@ -387,6 +389,7 @@ export class Scripted {
         })),
         ...(this.automations ? { automations: {} } : {}),
         ...(this.telemetry === null ? {} : { telemetry: this.telemetry }),
+        ...this.greeting,
       });
       return;
     }

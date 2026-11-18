@@ -1,6 +1,6 @@
 ---
 title: The docs show the hosts screen
-status: todo
+status: done
 depends:
   - task-03-the-agents-open-their-models.md
 layer: "docs"
@@ -42,3 +42,5 @@ refs:
 - `node ~/.claude/skills/do-spec/scripts/lint-prose.mjs docs/use/HOST.md` passes.
 
 ## Resume
+
+Done. `npm run docs:pictures` redraws every picture; only `host.svg` is kept, and the other pictures are restored. The picture shows the demo machine's platform, CPUs and memory.

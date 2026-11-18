@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { HostConnection, HostEvent } from './connection.js';
 import type {
-  Agent, Answer, Automation, Changeset, ChangesetOperation, ChangesetScope, ChatInputRequest, ChatOrigin, ChatState, ContentRef, Customization, FileContent, FileEdit,
+  Agent, Answer, Automation, HostAbout, Changeset, ChangesetOperation, ChangesetScope, ChatInputRequest, ChatOrigin, ChatState, ContentRef, Customization, FileContent, FileEdit,
   ModelRow, ModelSelection, PendingInput, QueuedMessage, ResourceEntry, ResponsePart, SessionConfig, SessionDetail, SessionSummary,
   SessionUri, TerminalState, ToolCall, Turn,
 } from './types.js';
@@ -234,6 +234,8 @@ const SOURCES: Record<string, string> = {
 const PAGE = 10;
 
 export function fakeHost(): FakeHost {
+  /** When this host came up, for the hosts screen's *Connected* row. */
+  const born = Date.now();
   const summaries = new Map<SessionUri, SessionSummary>();
   const turns = new Map<SessionUri, Turn[]>();
   /**
@@ -1577,6 +1579,23 @@ export function fakeHost(): FakeHost {
       const next = from + page.length;
       return { rows: page, ...(next < rows.length ? { nextCursor: String(next) } : {}) };
     },
+
+    // Every field, so each section of the hosts screen has something to draw.
+    about: async (): Promise<HostAbout> => ({
+      clientId: 'ahpc-scripted',
+      connectedAt: born,
+      protocolVersion: '1.1.0',
+      channels: 1,
+      serverSeq: 0,
+      principal: 'local',
+      server: { name: 'scripted host', version: '1.0.0' },
+      build: { version: '1.0.0' },
+      defaultDirectory: 'file:///work',
+      activeSessions: 1,
+      machine: { platform: 'linux', architecture: 'x64', cpus: 4, memoryBytes: 8 * 2 ** 30 },
+      settings: [{ provider: AGENTS[0]?.provider ?? 'scripted', title: 'Scripted agent', description: 'How the scripted agent answers.', keys: ['scripted.speed'] }],
+      trusted: ['file:///work'],
+    }),
 
     agents: async (): Promise<Agent[]> => AGENTS,
 

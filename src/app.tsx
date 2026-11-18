@@ -418,6 +418,21 @@ const Hints = defineComponent<BoxProps>('ChatHints', (props) => {
     );
   }
 
+  if (screen === 'hosts') {
+    return (
+      <KeyHints
+        {...props}
+        hints={[
+          { keys: upDown, label: i18n.t('views.app.hintMove') },
+          { keys: 'enter', label: i18n.t('views.app.hintExpand') },
+          { keys: 'n', label: i18n.t('views.app.hintNewSessionWith') },
+          { keys: 'esc', label: i18n.t('views.app.hintBack') },
+          { keys: 'ctrl+c', label: i18n.t('views.app.hintQuit') },
+        ]}
+      />
+    );
+  }
+
   if (screen !== 'sessions') {
     return (
       <KeyHints

@@ -54,6 +54,8 @@ export const commands: Record<string, string> = {
   'command.settings.show.description': 'As opções que o host oferece para esta sessão',
   'command.hosts.show.title': 'Mostrar hosts',
   'command.hosts.show.description': 'Gerenciar todos os hosts',
+  'command.hosts.newSession.title': 'Nova sessão com este agente',
+  'command.hosts.newSession.description': 'Inicia uma nova sessão com o agente selecionado na tela de hosts',
   'command.markdown.toggle.title': 'Renderizar markdown',
   'command.markdown.toggle.description': 'Desenhar o que o agente disse como markdown, ou como ele digitou',
   'command.editor.open.title': 'Editar no $EDITOR',

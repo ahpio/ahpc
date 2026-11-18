@@ -310,3 +310,11 @@ it('answers a request for a resource it was never asked to protect', async () =>
   await expect(host.listSessions()).resolves.toBeInstanceOf(Array);
   expect(host.asked('listSessions')).toBe(1);
 });
+
+it('says something about itself in every field, so each section of the hosts screen draws', async () => {
+  const about = await fakeHost().about();
+  for (const key of ['connectedAt', 'protocolVersion', 'principal', 'server', 'build', 'defaultDirectory', 'activeSessions', 'machine', 'trusted'] as const) {
+    expect(about[key]).toBeDefined();
+  }
+  expect(about.settings.length).toBeGreaterThan(0);
+});

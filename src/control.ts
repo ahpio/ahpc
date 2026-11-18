@@ -27,14 +27,14 @@ import type { HostConnection, RefusalKind, Sent } from './ahp/connection.js';
 import type { Terminals } from './terminal.js';
 import { createTerminals } from './terminal.js';
 import type {
-  Agent, Answer, Automation, Changeset, ChangesetScope, ChatSource, Completion, ConfigProperty, ContentRef, Customization, FileContent, QueuedMessage, ResourceEntry, SessionConfig, SessionDetail,
+  Agent, Answer, Automation, HostAbout, Changeset, ChangesetScope, ChatSource, Completion, ConfigProperty, ContentRef, Customization, FileContent, QueuedMessage, ResourceEntry, SessionConfig, SessionDetail,
   SessionUri, TerminalRow, Turn,
 } from './ahp/types.js';
 import type { Invoked } from './ahp/types.js';
 import { SessionFlag } from './ahp/types.js';
 import {
   ARCHIVED, BOOD_FLOAT, CAN_ADD_CHAT, CAN_FORK, CAN_SIDE_CHAT, CHAT_URI, CHATS, CUSTOMIZATIONS, CURSOR, DRAFT, EXPANDED, FILTER, FIND, FINDING, FIND_AT, HAS_CHATS,
-  HOST, HOST_ERROR, HOST_LINK, HOST_NOTE, INPUT, MODEL, MODEL_CONFIG, OPEN_TERMINAL, TERMINALS, TERMINAL_LIST,
+  HOST, HOST_AGENT, HOST_ERROR, HOST_LINK, HOST_NOTE, INPUT, MODEL, MODEL_CONFIG, OPEN_TERMINAL, TERMINALS, TERMINAL_LIST,
   AUTOMATIONS, AUTOMATION_EDIT, AUTOMATION_ROW, AUTOMATION_SIDEBAR, AUTH_ASK,
   CHANGES as CHANGES_AT_PATH, CHANGE_AT, CHANGE_ROW, CHANGE_SCOPES, FILES_AT, FILES_OPEN,
   OPEN, OPEN_FILE, PROVIDER, PULL_REQUEST, PULL_REQUEST_LAYER, TARGET_LAYER, MARKDOWN, QUEUE, QUIT_ARMED, QUIT_WINDOW_MS, RUNNING, SCREEN, SELECTED, SETTINGS, SIDEBAR,
@@ -163,6 +163,8 @@ export interface Controller {
   create(options: { provider: string; workingDirectory?: string; first?: string }): Promise<SessionUri>;
   /** The harnesses this host advertises, and the models each offers. */
   agents(): Promise<Agent[]>;
+  /** What the host said about itself, for the hosts screen. */
+  about(): Promise<HostAbout>;
   /** The session channel's own state: its chat, its lifecycle, its settings. */
   detail(uri: SessionUri): Promise<SessionDetail>;
   config(uri: SessionUri): Promise<SessionConfig>;
@@ -330,6 +332,8 @@ export const VERB_KEYS: Readonly<Record<string, string>> = {
 };
 
 export const AUTOMATIONS_SCOPE = 'chat.automations';
+/** The hosts screen, where `n` starts a session with the selected agent. */
+export const HOSTS_SCOPE = 'chat.hosts';
 
 export function createController(
   app: TextUIApp,
@@ -1188,6 +1192,7 @@ export function createController(
     },
 
     agents: () => guard(() => host.agents()),
+    about: () => guard(() => host.about()),
     detail: (uri) => guard(() => host.detail(uri)),
     config: (uri) => guard(() => host.config(uri)),
     customizations: (uri) => guard(() => host.customizations(uri)),
@@ -2240,6 +2245,25 @@ function commands(
       description: app.i18n.t('command.hosts.show.description'),
       slots: ['palette'],
       run: () => app.screens.push('hosts')
+    },
+    {
+      id: 'hosts.newSession',
+      title: app.i18n.t('command.hosts.newSession.title'),
+      category: app.i18n.t('category.screens'),
+      description: app.i18n.t('command.hosts.newSession.description'),
+      slots: ['palette'],
+      // A new session, its agent, and the model when a model's row was
+      // selected: the commands a person would run. `harness.choose` picks
+      // from the agents its list last read, so the list is read first. An
+      // agent's own row chooses no model, and the host's default stands.
+      run: async () => {
+        const picked = app.store.get<{ provider: string; model?: string } | null>(HOST_AGENT);
+        if (!picked?.provider) return;
+        await app.execute('session.new');
+        await listAgents();
+        await app.execute('harness.choose', { id: picked.provider });
+        if (picked.model !== undefined) await app.execute('model.choose', { id: picked.model });
+      },
     },
 
     /**
@@ -3369,6 +3393,7 @@ function shipped(i18n: TextUIApp['i18n']): Binding[] {
     { keys: 'right', commandId: 'automation.showDetails', scopeId: AUTOMATIONS_SCOPE },
     { keys: 'left', commandId: 'automation.hideDetails', scopeId: AUTOMATIONS_SCOPE },
     { keys: 'n', commandId: 'automation.new', scopeId: AUTOMATIONS_SCOPE },
+    { keys: 'n', commandId: 'hosts.newSession', scopeId: HOSTS_SCOPE },
     { keys: 'e', commandId: 'automation.edit', scopeId: AUTOMATIONS_SCOPE },
     { keys: 'o', commandId: 'automation.toggle', scopeId: AUTOMATIONS_SCOPE },
     { keys: 'd', commandId: 'automation.delete', scopeId: AUTOMATIONS_SCOPE },
