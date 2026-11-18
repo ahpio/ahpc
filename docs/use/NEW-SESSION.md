@@ -10,6 +10,8 @@ The first message starts the session, and the screen becomes [the session](SESSI
 
 The host serves the agents, which the protocol calls harnesses. The first chip picks one, such as Claude or Copilot. Each host has its own list. See [Agents](../subjects/AGENTS.md).
 
+A new session starts with the agent, model and model options, such as effort, of the last session on the same host. They are kept in `choices.json` beside the config file, one entry per host address. An agent, a model or an option the host no longer offers falls back to the host's own. `--no-remember`, or `"rememberChoices": false` in the config file, starts each session at the host's first agent and default model.
+
 ## The fields
 
 Below the composer, each chip is a field the host sends. The agent and the host each send their own, so the fields change with the host and with the agent you pick. ahpc draws a chip for a field it does not know too.

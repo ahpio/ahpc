@@ -62,6 +62,15 @@ A workspace you pick on the screen is not trusted until the config file lists it
 | `lang` | `--lang` | `en`, `pt-br` or `es` |
 | `shell` | `--shell` | The screen layout |
 
+## Remembered choices
+
+A new session starts with the agent, the model and the model's options last used on the same host. See [New session](../use/NEW-SESSION.md#the-agent).
+
+Turn it off with either of:
+
+- `--no-remember`
+- `"rememberChoices": false` in the config file
+
 ## Update check
 
 The screen asks npm, at most every six hours, whether a newer `@softov/ahpc` exists. When there is one, the status row says so, and `ahpc status` prints it too.

@@ -1,7 +1,7 @@
 ---
 title: ahpc remembers the last agent and model per host
 domain: screen
-status: planned
+status: built
 priority: medium
 created: 2026-11-18
 revalidated: 2026-11-18
@@ -84,9 +84,9 @@ send on a new session -> controller.create() -> write { provider, model, modelCo
 
 | Task | Status | Depends on |
 | --- | --- | --- |
-| [01 - ahpc keeps the last choice per host](task-01-ahpc-keeps-the-last-choice.md) | todo | - |
-| [02 - A new session starts from the last choice](task-02-a-new-session-starts-from-it.md) | todo | 01 |
-| [03 - The docs say ahpc remembers](task-03-the-docs-say-ahpc-remembers.md) | todo | 02 |
+| [01 - ahpc keeps the last choice per host](task-01-ahpc-keeps-the-last-choice.md) | done | - |
+| [02 - A new session starts from the last choice](task-02-a-new-session-starts-from-it.md) | done | 01 |
+| [03 - The docs say ahpc remembers](task-03-the-docs-say-ahpc-remembers.md) | done | 02 |
 
 ## Risks and tradeoffs
 
@@ -96,15 +96,15 @@ send on a new session -> controller.create() -> write { provider, model, modelCo
 
 ## Resume state
 
-- **Done so far:** nothing.
-- **Next action:** [task-01-ahpc-keeps-the-last-choice.md](task-01-ahpc-keeps-the-last-choice.md), after pull request #36 merges.
+- **Done so far:** tasks 01 to 03, on 2026-11-18, as [implemented.md](implemented.md) says.
+- **Next action:** review, then the check by hand in [ahpc-remembers-the-last-agent-and-model.md](../../../pending/ahpc-remembers-the-last-agent-and-model.md).
 - **Open questions:** none; every row in *Answers* is Softov's or defaulted, and he may erase a defaulted one.
 - **Watch out for:** never let a remembered value override a choice made in the screen.
 
 ## Final verification checklist
 
-- [ ] Starting a session writes the agent, the model and the model's options under the host's address.
-- [ ] After a restart, a new session on that host starts with them.
-- [ ] A remembered agent, model or option the host no longer offers is left out.
-- [ ] `rememberChoices: false` and `--no-remember` neither read nor write the file.
-- [ ] `npm run typecheck`, `npm test` and `npm run docs:build` pass.
+- [x] Starting a session writes the agent, the model and the model's options under the host's address.
+- [ ] After a restart against a live host, a new session on that host starts with them.
+- [x] A remembered agent, model or option the host no longer offers is left out.
+- [x] `rememberChoices: false` and `--no-remember` neither read nor write the file.
+- [x] `npm run typecheck`, `npm test` and `npm run docs:build` pass.
