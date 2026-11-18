@@ -320,7 +320,8 @@ function signedInRoute(host: string, tunnel: Tunnel, own: string | undefined, pr
       if (error instanceof GatewayRefused) return `The tunnel at ${host} could not open its agent host: ${error.message}.`;
       if (error instanceof GatewayError) return `Could not reach ${host}: ${error.message}.`;
       if (last === undefined) {
-        return `Could not reach ${host}: ${error instanceof Error ? error.message : String(error)}.`;
+        // The reason is a sentence of its own, and may end in a period already.
+        return `Could not reach ${host}: ${(error instanceof Error ? error.message : String(error)).replace(/\.$/, '')}.`;
       }
       return whyNoConnection(last.url, token, through());
     },

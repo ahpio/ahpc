@@ -171,3 +171,12 @@ describe('a private tunnel is reached signed in', () => {
     expect(routeOf('tunnel:abc.usw2', {}, 'anonymous')).toBe(noOwnToken('tunnel:abc.usw2'));
   });
 });
+
+describe('the reason a signed-in tunnel failed', () => {
+  it('ends in one period when the reason already ends in one', async () => {
+    const route = routeOf('tunnel:abc', {}, 'signed-in');
+    if (typeof route === 'string') throw new Error(route);
+    expect(await route.why(new Error('The tunnel abc has no host online.'))).toBe('Could not reach tunnel:abc: The tunnel abc has no host online.');
+    expect(await route.why(new Error('no route'))).toBe('Could not reach tunnel:abc: no route.');
+  });
+});
