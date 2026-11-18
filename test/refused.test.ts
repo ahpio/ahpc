@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { whyNoConnection } from '../src/ahp/refused.js';
+import { tunnelRefused } from '../src/ahp/tunnel.js';
 
 let running: Server | undefined;
 
@@ -60,6 +61,27 @@ describe('a failed answer that says why is quoted', () => {
     await stop();
     const long = await serveBody(503, 'x'.repeat(201), 'text/plain');
     expect(await whyNoConnection(long)).toBe(`Could not reach ${long}: 503 Service Unavailable. If it is running, check the connection token.`);
+  });
+});
+
+describe('a 401 through a tunnel says whose token was refused', () => {
+  /** A tunnel host as the signed-in or the connect-token way names it. */
+  const through = (headers?: Record<string, string>) => ({ host: 'tunnel:abc.usw2', id: 'abc', ...(headers ? { headers } : {}) });
+  const CONNECT = { 'X-Tunnel-Authorization': 'tunnel c' };
+
+  it('names the connect token for an empty 401, which is how the tunnel refuses one', async () => {
+    const { url } = await serve(401, 'Unauthorized');
+    expect(await whyNoConnection(url, 'mine', through(CONNECT))).toBe(tunnelRefused('tunnel:abc.usw2', 'abc', true));
+  });
+
+  it('keeps the host\'s sentence for a 401 that says why, as ahpd\'s does', async () => {
+    const url = await serveBody(401, 'A connection token is required', 'text/plain');
+    expect(await whyNoConnection(url, 'mine', through(CONNECT))).toBe('The host at tunnel:abc.usw2 refused the connection token.');
+  });
+
+  it('keeps the host\'s sentence for an empty 401 when no connect token was sent', async () => {
+    const { url } = await serve(401, 'Unauthorized');
+    expect(await whyNoConnection(url, 'mine', through())).toBe('The host at tunnel:abc.usw2 refused the connection token.');
   });
 });
 

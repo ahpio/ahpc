@@ -1,7 +1,7 @@
 ---
 title: A connect token the tunnel refuses is named as the tunnel's
 domain: ahp
-status: planned
+status: built
 priority: medium
 created: 2026-11-18
 revalidated: 2026-11-18
@@ -69,7 +69,7 @@ socket fails -> whyNoConnection(url, token, tunnel with headers) -> GET with the
 
 | Task | Status | Depends on |
 | --- | --- | --- |
-| [01 - An empty 401 through a tunnel is the tunnel's](task-01-an-empty-401-is-the-tunnels.md) | todo | - |
+| [01 - An empty 401 through a tunnel is the tunnel's](task-01-an-empty-401-is-the-tunnels.md) | done | - |
 
 ## Risks and tradeoffs
 
@@ -77,14 +77,14 @@ socket fails -> whyNoConnection(url, token, tunnel with headers) -> GET with the
 
 ## Resume state
 
-- **Done so far:** nothing.
-- **Next action:** [task-01-an-empty-401-is-the-tunnels.md](task-01-an-empty-401-is-the-tunnels.md).
+- **Done so far:** task 01, on 2026-11-18, as [implemented.md](implemented.md) says.
+- **Next action:** review.
 - **Open questions:** none.
 - **Watch out for:** a tunnel with no connect token sent keeps the host's sentence for every 401.
 
 ## Final verification checklist
 
-- [ ] An empty 401 through a tunnel with a connect token says the connect token was refused.
-- [ ] A 401 with a body says the host refused its token.
-- [ ] Step 8 of the tunnel check prints `refused the connect token` and stops.
-- [ ] `npm run typecheck` and `npm test` pass.
+- [x] An empty 401 through a tunnel with a connect token says the connect token was refused.
+- [x] A 401 with a body says the host refused its token.
+- [x] Step 8 of the tunnel check prints `refused the connect token` and stops.
+- [x] `npm run typecheck` and `npm test` pass.

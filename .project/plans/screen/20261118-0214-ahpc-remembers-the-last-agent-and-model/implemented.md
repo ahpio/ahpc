@@ -23,7 +23,7 @@ A new session on the screen starts with the agent, model and model options of th
 - `test/choices.test.ts` passes 2 tests: one choice per address, and a broken file read as none.
 - `test/remember.test.tsx` passes 4 tests: a restart, the model and its options, what the host no longer offers, and remembering off.
 - `npm run typecheck`, `npm run docs:build` and `npm test` pass: 56 files, 985 tests.
-- Not run: a restart against a live host. The check waits in [ahpc-remembers-the-last-agent-and-model.md](../../../pending/ahpc-remembers-the-last-agent-and-model.md).
+- Softov's check by hand passed on 2026-11-18: after a restart, a new session on a live host came back with its agent, model and effort.
 
 ## Departures from the plan
 

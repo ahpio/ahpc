@@ -1,6 +1,6 @@
 ---
 title: An empty 401 through a tunnel is the tunnel's
-status: todo
+status: done
 depends: []
 layer: "ahp"
 refs:
@@ -32,3 +32,6 @@ Through a tunnel with a connect token sent, a 401 with an empty body says the co
 - `npx vitest run test/refused.test.ts test/tunnel.test.ts` and `npm run typecheck` pass.
 
 ## Resume
+
+Done. Against a private tunnel on 2026-11-18, a bad connect token printed `refused the connect token` and exited in 1 s.
+A wrong host token behind a good connect token kept the host's sentence.

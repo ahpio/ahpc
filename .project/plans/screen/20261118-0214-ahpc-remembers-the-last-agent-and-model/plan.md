@@ -97,14 +97,14 @@ send on a new session -> controller.create() -> write { provider, model, modelCo
 ## Resume state
 
 - **Done so far:** tasks 01 to 03, on 2026-11-18, as [implemented.md](implemented.md) says.
-- **Next action:** review, then the check by hand in [ahpc-remembers-the-last-agent-and-model.md](../../../pending/ahpc-remembers-the-last-agent-and-model.md).
+- **Next action:** none; Softov's check by hand passed on 2026-11-18.
 - **Open questions:** none; every row in *Answers* is Softov's or defaulted, and he may erase a defaulted one.
 - **Watch out for:** never let a remembered value override a choice made in the screen.
 
 ## Final verification checklist
 
 - [x] Starting a session writes the agent, the model and the model's options under the host's address.
-- [ ] After a restart against a live host, a new session on that host starts with them.
+- [x] After a restart against a live host, a new session on that host starts with them.
 - [x] A remembered agent, model or option the host no longer offers is left out.
 - [x] `rememberChoices: false` and `--no-remember` neither read nor write the file.
 - [x] `npm run typecheck`, `npm test` and `npm run docs:build` pass.
