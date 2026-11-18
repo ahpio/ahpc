@@ -33,7 +33,7 @@ Everything runs on the Linux machine, in two terminals. It needs the `devtunnel`
 - Pass: step 3 prints `needs a token of your own` and exits 1.
 - Pass: step 5 prints `The tunnel at tunnel:ahpc-check.<cluster> needs a sign-in`.
 - Pass: step 7 prints the session list.
-- Pass: step 8 exits 1 at once. It prints `refused the connection token` today, which names the wrong token: see the problem [a-refused-connect-token-blames-the-host-token.md](../problems/a-refused-connect-token-blames-the-host-token.md).
+- Pass: step 8 exits 1 at once. It prints `refused the connection token` today, which names the wrong token: see plan [ahp/20261118-1024-a-refused-connect-token-names-the-tunnel](../plans/ahp/20261118-1024-a-refused-connect-token-names-the-tunnel/plan.md).
 - Pass: in step 9, the screen comes back once the tunnel is back.
 - Fail: any step prints a stack, or step 8 keeps retrying.
 
