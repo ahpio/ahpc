@@ -1,5 +1,6 @@
 import { appendFileSync } from 'node:fs';
 import { socketHeld } from '../exit.js';
+import { hostAbout } from './about.js';
 import { randomUUID } from 'node:crypto';
 import { openChannels } from './channels.js';
 import type { Consumer } from './channels.js';
@@ -301,7 +302,7 @@ interface Client {
 }
 
 interface Mirror {
-  readonly root: { agents?: unknown[]; terminals?: unknown[] };
+  readonly root: { agents?: unknown[]; terminals?: unknown[]; _meta?: unknown; activeSessions?: unknown; config?: unknown };
   applySnapshot(snapshot: unknown): void;
   apply(envelope: unknown): void;
 }
@@ -1781,6 +1782,10 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
     ...(locale() !== undefined ? { locale: locale() as string } : {}),
   }));
   for (const snapshot of list(hello.snapshots)) mirror.applySnapshot(snapshot);
+  /** The `initialize` answer the connection last came up on, for `about`. */
+  let greeting: Bag = hello;
+  /** When the connection last came up. */
+  let connectedAt = Date.now();
   moveTo('connected');
 
   /** What `liveHost` returns, once it is built, for `onConnected`. */
@@ -2066,12 +2071,12 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
             // cannot be resumed is started again - retrying `reconnect` at a
             // host that has forgotten us is a loop with no end in it.
             if (!isRpcRefusal(error)) throw error;
-            await fresh.initialize({
+            greeting = bag(await fresh.initialize({
               clientId,
               protocolVersions: VERSIONS,
               clientInfo: { name: 'ahpc' },
               initialSubscriptions: held,
-            });
+            }));
           }
 
           client = fresh;
@@ -2081,6 +2086,7 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
               ? { replayed: list(answer.actions), missing: list(answer.missing).filter((uri): uri is string => typeof uri === 'string') }
               : { resumed: list(answer.snapshots) as { resource: string; state?: unknown }[] });
           }
+          connectedAt = Date.now();
           moveTo('connected');
           await usable();
           // Notifications are not replayed, so what the catalogue missed is
@@ -2547,6 +2553,15 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
         ...(str(result.nextCursor) === undefined ? {} : { nextCursor: str(result.nextCursor) as string }),
       };
     },
+
+    about: async () => hostAbout({
+      answer: greeting,
+      root: mirror.root,
+      clientId,
+      connectedAt,
+      channels: channels.held().length,
+      serverSeq: channels.seq(),
+    }),
 
     agents: async (): Promise<Agent[]> => list(mirror.root.agents).map((entry) => {
       const agent = bag(entry);

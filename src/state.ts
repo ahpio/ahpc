@@ -197,6 +197,13 @@ export const SETTINGS = '$/chat/compose/settings' as BindingPath;
 
 /** What the host last refused, in the host's own words. Cleared by success. */
 export const HOST_ERROR = '$/chat/host/error' as BindingPath;
+/**
+ * The agent selected on the hosts screen, by provider.
+ *
+ * In the store rather than the screen's own state, because `n` is a key
+ * binding, and its command reads which agent to start a session with here.
+ */
+export const HOST_AGENT = '$/chat/hosts/agent' as BindingPath;
 
 /** The link the host last answered a changeset verb with, such as a pull request. */
 export const HOST_LINK = '$/chat/host/link' as BindingPath;

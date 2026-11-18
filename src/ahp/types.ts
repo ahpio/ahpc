@@ -913,3 +913,39 @@ export interface Automation {
    */
   definition?: Record<string, unknown>;
 }
+
+/**
+ * What a host said about itself, for the hosts screen.
+ *
+ * Each optional field is one the host may leave out, and is absent when it
+ * did: a screen draws what was sent and invents nothing. The connection's own
+ * facts are always there, because this client knows them.
+ */
+export interface HostAbout {
+  /** This client's name to the host. */
+  clientId: string;
+  /** When the connection last came up, in milliseconds since the epoch. */
+  connectedAt?: number;
+  /** The protocol version the host chose at `initialize`. */
+  protocolVersion?: string;
+  /** How many channels this client follows. */
+  channels: number;
+  /** The last `serverSeq` this client has seen. */
+  serverSeq: number;
+  /** The account the host says this connection is, `ahpd.principal`. */
+  principal?: string;
+  /** The host software, from `serverInfo`. */
+  server?: { name: string; version?: string };
+  /** The host's build, from the root `_meta.hostBuild`. */
+  build?: { version?: string; commit?: string; date?: string };
+  /** Where a new session starts when it names no folder, a URI. */
+  defaultDirectory?: string;
+  /** How many sessions are running, from the root state. */
+  activeSessions?: number;
+  /** The machine, from the root `_meta["vscode.agentHost.resources"]`. */
+  machine?: { platform?: string; architecture?: string; cpus?: number; memoryBytes?: number };
+  /** Each agent's settings page, from the root `_meta["vscode.agentCustomizationSettings"]`. */
+  settings: { provider: string; title: string; description?: string; keys: string[] }[];
+  /** The folders the host trusts, as URIs, from the root config's `workspaceTrust`. */
+  trusted?: string[];
+}

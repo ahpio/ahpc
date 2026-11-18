@@ -1,6 +1,6 @@
 ---
 title: The agents open their models
-status: todo
+status: done
 depends:
   - task-02-the-hosts-screen-is-a-page.md
 layer: "screen"
@@ -45,3 +45,15 @@ Enter or a click opens and closes an agent's models, and `n` starts a new sessio
 - `npm run typecheck` and `npm test` pass.
 
 ## Resume
+
+Done with textui 0.9.2; before it, blocked on that release. A click on a `Tree` row only selected it. Softov chose to change `Tree` in textui.
+Now a click on a row with children opens or closes it.
+textui released it in 0.9.2, and ahpc moved to that release; all of `test/hosts.test.tsx` passes.
+
+Besides the files above, this task changed:
+
+- `src/state.ts`: `HOST_AGENT`, the selected agent, because the `n` key runs a command and the command reads it from the store.
+- `src/control.ts`: `HOSTS_SCOPE`, the command `hosts.newSession` and its key `n`. The command reads the agents first, because `harness.choose` picks from the list its palette last read.
+- `src/app.tsx`: the key row of the hosts screen.
+- The page follows the selected row only after it moves, so it opens at its top.
+- An agent's meta is cut to the width its name leaves, because a long description cut the name.

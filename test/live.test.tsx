@@ -5,7 +5,7 @@ import { fakeHost } from '../src/ahp/fake.js';
 import { CONTROLLER } from '../src/control.js';
 import { sessions } from '../src/state.js';
 import { activityOf } from '../src/ahp/live.js';
-import { CHAT, SESSION, connect, settle } from './scenario.js';
+import { CHAT, ROOT, SESSION, connect, settle } from './scenario.js';
 
 /*
  * A catalogue is only as fresh as what it was last told.
@@ -457,6 +457,60 @@ describe('a call waiting on a sign-in', () => {
       description: 'the token expired',
     });
     reader.close();
+    await host.close();
+  });
+});
+
+describe('what a host says about itself', () => {
+  it('answers the initialize answer, the root state and the connection, and leaves out what was not sent', async () => {
+    const { host } = await connect((scripted) => {
+      scripted.protocolVersion = '1.1.0';
+      scripted.greeting = {
+        serverInfo: { name: 'example host', version: '2.0.0' },
+        defaultDirectory: 'file:///work',
+        _meta: { 'ahpd.principal': 'octocat' },
+      };
+      scripted.states.set(ROOT, {
+        agents: [],
+        activeSessions: 2,
+        config: { values: { workspaceTrust: { enabled: true, trustedUris: ['file:///work', 'file:///notes'] } } },
+        _meta: {
+          hostBuild: { version: '1.146.0', commit: 'abc123', date: '2026-11-10T19:27:51Z', quality: 'stable' },
+          'vscode.agentHost.resources': { platform: 'windows', architecture: 'x64', cpuCount: 12, memoryBytes: 51522015232 },
+          'vscode.agentCustomizationSettings': [
+            { provider: 'codex', title: 'Codex', description: 'Codex defaults.', settings: [{ key: 'codex.model' }, { key: 'codex.effort' }] },
+            { provider: 'broken' },
+          ],
+        },
+      });
+    });
+    const about = await host.about();
+
+    expect(about).toMatchObject({
+      clientId: 'ahpc-test',
+      protocolVersion: '1.1.0',
+      principal: 'octocat',
+      server: { name: 'example host', version: '2.0.0' },
+      build: { version: '1.146.0', commit: 'abc123', date: '2026-11-10T19:27:51Z' },
+      defaultDirectory: 'file:///work',
+      activeSessions: 2,
+      machine: { platform: 'windows', architecture: 'x64', cpus: 12, memoryBytes: 51522015232 },
+      settings: [{ provider: 'codex', title: 'Codex', description: 'Codex defaults.', keys: ['codex.model', 'codex.effort'] }],
+      trusted: ['file:///work', 'file:///notes'],
+    });
+    expect(about.channels).toBeGreaterThan(0);
+    expect(typeof about.connectedAt).toBe('number');
+    await host.close();
+  });
+
+  it('leaves out the server, the build and the machine of a host that sent none', async () => {
+    const { host } = await connect();
+    const about = await host.about();
+
+    for (const key of ['server', 'build', 'machine', 'principal', 'activeSessions', 'trusted', 'defaultDirectory'] as const) {
+      expect(about[key]).toBeUndefined();
+    }
+    expect(about.settings).toEqual([]);
     await host.close();
   });
 });

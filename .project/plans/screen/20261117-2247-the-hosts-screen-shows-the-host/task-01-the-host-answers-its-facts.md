@@ -1,6 +1,6 @@
 ---
 title: The host connection answers the host's facts
-status: todo
+status: done
 depends: []
 layer: "ahp"
 refs:
@@ -54,3 +54,5 @@ A fact the host did not send is absent from the answer.
 - `npx vitest run test/live.test.tsx test/fake.test.ts` and `npm run typecheck` pass.
 
 ## Resume
+
+Done. The fields are read in a new `src/ahp/about.ts`, `hostAbout`, which `live.ts` calls. The scripted test host gained `greeting`, more keys for its `initialize` answer.

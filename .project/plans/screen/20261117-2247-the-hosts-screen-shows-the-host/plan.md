@@ -1,7 +1,7 @@
 ---
 title: The hosts screen scrolls and shows the host
 domain: screen
-status: planned
+status: built
 priority: medium
 created: 2026-11-17
 revalidated: 2026-11-17
@@ -68,6 +68,7 @@ hosts.show -> screens.push('hosts') -> HostsScreen
 | The hosts screen work is its own brief and plan, beside the servers plan | Softov, 2026-11-17: "Its own brief" | - |
 | The page has ahpw's sections: Connection, Server, Machine, Automations, Agents, Agent settings, Trusted folders, Terminals | Softov, 2026-11-17: "Connection, Server and machine, Automations and terminals, Settings and trusted folders" | 02 |
 | Enter or a click on an agent opens and closes its models | Softov, 2026-11-17: "maybe it could expand the models on agents on enter or click" | 03 |
+| A click opens an agent through textui: `Tree` opens or closes a row with children on a click, released in textui, and ahpc moves to that release | Softov, 2026-11-17: "Click opens in textui's Tree" | 03 |
 | The page follows the two mockups in this folder: [mockup-01-top.png](mockup-01-top.png) and [mockup-02-agents.png](mockup-02-agents.png) | Softov, 2026-11-17: "write the brief", after he saw both | 02, 03 |
 | `n` starts a new session with the selected agent | (defaulted: ahpw's chat button; in the mockup Softov saw) | 03 |
 | The address shows once, on the first line | (defaulted: in the mockup Softov saw) | 02 |
@@ -91,10 +92,10 @@ hosts.show -> screens.push('hosts') -> HostsScreen
 
 | Task | Status | Depends on |
 | --- | --- | --- |
-| [01 - The host connection answers the host's facts](task-01-the-host-answers-its-facts.md) | todo | - |
-| [02 - The hosts screen is a page with sections](task-02-the-hosts-screen-is-a-page.md) | todo | 01 |
-| [03 - The agents open their models](task-03-the-agents-open-their-models.md) | todo | 02 |
-| [04 - The docs show the hosts screen](task-04-the-docs-show-the-hosts-screen.md) | todo | 03 |
+| [01 - The host connection answers the host's facts](task-01-the-host-answers-its-facts.md) | done | - |
+| [02 - The hosts screen is a page with sections](task-02-the-hosts-screen-is-a-page.md) | done | 01 |
+| [03 - The agents open their models](task-03-the-agents-open-their-models.md) | done | 02 |
+| [04 - The docs show the hosts screen](task-04-the-docs-show-the-hosts-screen.md) | done | 03 |
 
 ## Risks and tradeoffs
 
@@ -104,18 +105,18 @@ hosts.show -> screens.push('hosts') -> HostsScreen
 
 ## Resume state
 
-- **Done so far:** nothing.
-- **Next action:** [task-01-the-host-answers-its-facts.md](task-01-the-host-answers-its-facts.md).
+- **Done so far:** tasks 01 to 04, on 2026-11-17, as [implemented.md](implemented.md) says.
+- **Next action:** review, then the pull request.
 - **Open questions:** none; every row in *Answers* is Softov's or defaulted, and he may erase a defaulted one.
 - **Watch out for:** draw no fact the host did not send, and name no host or agent in the screen's code.
 
 ## Final verification checklist
 
-- [ ] `about()` answers the protocol version, the client id, the channels followed and `serverSeq` from both hosts.
-- [ ] The root `_meta` build, machine and settings pages reach the page from a live host.
-- [ ] The page scrolls, and a section the host sent nothing for is not drawn.
-- [ ] Enter and a click open and close an agent's models; `n` opens a new session with that agent.
-- [ ] The page matches the two mockups in this folder.
-- [ ] `npm run typecheck`, `npm test` and `npm run docs:build` pass.
-- [ ] Against a VS Code tunnel and an ahpd host, the page shows each one's own facts.
+- [x] `about()` answers the protocol version, the client id, the channels followed and `serverSeq` from both hosts.
+- [x] The root `_meta` build, machine and settings pages reach the page from a live host.
+- [x] The page scrolls, and a section the host sent nothing for is not drawn.
+- [x] Enter and a click open and close an agent's models; `n` opens a new session with that agent.
+- [x] The page matches the two mockups in this folder.
+- [x] `npm run typecheck`, `npm test` and `npm run docs:build` pass.
+- [x] Against a VS Code tunnel and an ahpd host, the page shows each one's own facts.
 

@@ -19,27 +19,27 @@ import {
   useTheme,
 } from '@textui/core';
 import {
-  Badge, Button, Column, Dialog, Divider, EmptyState, Field, Form, FormActions, Marquee, Panel, RadioGroup, Row, SearchBox, Select, Switch, Tabs, TextArea, TextInput,
+  Badge, Button, Column, Dialog, Divider, EmptyState, Field, Form, FormActions, KeyValue, Marquee, Panel, RadioGroup, Row, ScrollView, SearchBox, Select, Switch, Tabs, TextArea, TextInput, Tree,
   argumentOf, useForm,
 } from '@textui/widgets';
 import { PRESETS, presetFor, presetLabel, scheduleProblem, zoneIsKnownHere } from './schedule.js';
 import type { Preset } from './schedule.js';
 import {
-  AUTOMATIONS_SCOPE, CHANGES_SCOPE, CHAT_SCOPE, CONTROLLER, MCP_SCOPE, SESSIONS_SCOPE, SKILLS_SCOPE, VERB_KEYS, chooseScope, modelCommand, settingCommand,
+  AUTOMATIONS_SCOPE, CHANGES_SCOPE, CHAT_SCOPE, CONTROLLER, HOSTS_SCOPE, MCP_SCOPE, SESSIONS_SCOPE, SKILLS_SCOPE, VERB_KEYS, chooseScope, modelCommand, settingCommand,
 } from './control.js';
 import { branchName, branchDrift, pullRequestLabel,
   ARCHIVED, AUTOMATIONS, AUTOMATION_EDIT, AUTOMATION_ROW, AUTOMATION_SIDEBAR, CHANGES, CUSTOMIZATIONS, DRAFT, EXPANDED, FILTER, FOCUS, HISTORY, HOST, INPUT,
   CHANGE_AT, CHANGE_ROW, CHANGE_SCOPES, PULL_REQUEST, FILES_AT, FILES_ENTRIES, FILES_OPEN,
   MODEL, MODEL_CONFIG, OPEN, OPEN_FILE, CHAT_URI, PROVIDER, QUEUE, SELECTED, SESSIONS, SETTINGS, SIDEBAR,
   CHATS, CURSOR, FIND, FINDING, FIND_AT, OPEN_TERMINAL, PRESENT, SPLIT_AT, SPLIT_DEFAULT, TERMINAL, TERMINALS, TERMINAL_LIST, TURNS, WORKSPACE,
-  ANSWERS, HOST_ERROR, HOST_LINK, HOST_NOTE, INPUT_STATUS, MARKDOWN, boodFloorFor,
+  ANSWERS, HOST_AGENT, HOST_ERROR, HOST_LINK, HOST_NOTE, INPUT_STATUS, MARKDOWN, boodFloorFor,
   hiddenSessions, openSession, sessionView, shownScope, statusLabel, visibleSessions, workspaceName,
 } from './state.js';
 import type { HostState, InputStatus, PullRequestAsk } from './state.js';
 import { chosenOperations } from './ahp/followup.js';
 import { toBlocks } from './blocks.js';
 import type {
-  Agent, Answer, Automation, Changeset, ChangesetScope, Completion, ContentRef, Customization, FileContent, PendingInput, QueuedMessage, ResourceEntry,
+  Agent, Answer, Automation, Changeset, ChangesetScope, Completion, ContentRef, Customization, FileContent, HostAbout, PendingInput, QueuedMessage, ResourceEntry,
   TerminalRow, TerminalState,
   ConfigProperty, ModelRow, SessionConfig, SessionDetail, SessionSummary, SlashCommand, Turn,
 } from './ahp/types.js';
@@ -51,7 +51,7 @@ import {
 import type { ComposerOption, DetailField, ChatPendingInput } from '@textui/chat';
 import { ChangesList } from './view/changes.js';
 import { FileList } from './view/files.js';
-import { AutomationList, AutomationRuns, automationFields } from './view/automations.js';
+import { AutomationList, AutomationRuns, automationFields, since } from './view/automations.js';
 import { CustomizationList } from './view/customizations.js';
 import { TerminalView } from './view/terminal.js';
 
@@ -2629,51 +2629,280 @@ export const SettingsScreen: (props: Record<string, never>) => RenderOutput =
 
 // ------------------------------------------------------------------- 6. hosts
 
+/** A `file://` URI as the path a person types, and any other URI as it is. */
+function folderOf(uri: string): string {
+  if (!uri.startsWith('file://')) return uri;
+  const path = decodeURIComponent(uri.slice('file://'.length));
+  // `file:///c%3A/Users/x` is `C:` on Windows, with no slash before the drive.
+  return /^\/[a-zA-Z]:/.test(path) ? path.slice(1) : path;
+}
+
+/** One section of the hosts page: its title, a rule, and what it holds. */
+const HostSection = defineComponent<{ title: string; count?: number; children?: unknown }>('HostSection', (props) => (
+  <Column gap={0}>
+    <Row gap={1}>
+      <text content={props.title} bold />
+      {props.count !== undefined ? <text content={String(props.count)} fg="subtle" /> : null}
+    </Row>
+    <Divider />
+    {props.children as RenderOutput}
+  </Column>
+));
+
+/** The rows that have a value, so a row the host sent nothing for is left out. */
+const rowsOf = (rows: { label: string; value: string | undefined }[]): { label: string; value: string }[] =>
+  rows.filter((row): row is { label: string; value: string } => row.value !== undefined && row.value !== '');
+
 export const HostsScreen: (props: Record<string, never>) => RenderOutput =
   defineComponent<Record<string, never>>('HostsScreen', () => {
     const app = useApp();
     const i18n = useI18n();
+    const controller = useRequiredService(CONTROLLER);
     const host = useStoreValue<HostState>(HOST);
+    const hostError = useStoreValue<string | null>(HOST_ERROR, null) ?? null;
+    const catalogue = useStoreValue<Record<string, SessionSummary>>(SESSIONS, {}) ?? {};
+    const terminals = useStoreValue<TerminalRow[]>(TERMINALS, []) ?? [];
+    const [about, setAbout] = useState<HostAbout | null>(null);
     const [agents, setAgents] = useState<Agent[]>([]);
+    const [automations, setAutomations] = useState<Automation[] | null>(null);
+    useFocusScope({ id: HOSTS_SCOPE });
+    const [offset, setOffset] = useState(0);
+    /** The page's own rows on screen, as `HostPage` last measured them. */
+    const viewport = useRef<{ y: number; height: number }>({ y: 0, height: 0 });
+    /** Scroll the least that brings one row on screen. */
+    const follow = (row: number): void => {
+      const { y, height } = viewport.current;
+      if (height <= 0) return;
+      if (row < y) setOffset((was: number) => Math.max(0, was - (y - row)));
+      else if (row >= y + height) setOffset((was: number) => was + (row - (y + height) + 1));
+    };
 
     useEffect(() => {
-      void app.services.require(CONTROLLER).agents().then(setAgents);
+      void controller.about().then(setAbout).catch(() => undefined);
+      void controller.agents().then(setAgents).catch(() => undefined);
+      // A host that serves no automations rejects, and the section is left out.
+      void controller.automations().then(setAutomations).catch(() => setAutomations(null));
+      void controller.terminals.refresh();
     }, []);
+    // Active sessions and the root `_meta` move with the root channel, as the
+    // catalogue does, so the facts are asked again when it changes.
+    useEffect(() => {
+      void controller.about().then(setAbout).catch(() => undefined);
+    }, [Object.keys(catalogue).length]);
+
+    const now = Date.now();
+    const sinceMs = (at: number): string => since(new Date(at).toISOString(), now, i18n);
+
+    const connection = about === null ? [] : rowsOf([
+      { label: i18n.t('screens.hosts.protocol'), value: about.protocolVersion },
+      {
+        label: i18n.t('screens.hosts.connected'),
+        value: about.connectedAt === undefined ? undefined
+          : i18n.t('screens.hosts.connectedValue', { time: new Date(about.connectedAt).toTimeString().slice(0, 5), ago: sinceMs(about.connectedAt) }),
+      },
+      { label: i18n.t('screens.hosts.client'), value: about.clientId },
+      { label: i18n.t('screens.hosts.signedInAs'), value: about.principal },
+      {
+        label: i18n.t('screens.hosts.following'),
+        value: i18n.t('screens.hosts.followingValue', {
+          channels: i18n.plural(about.channels, { one: i18n.t('screens.hosts.channels.one'), other: i18n.t('screens.hosts.channels.other') }),
+          seq: about.serverSeq,
+        }),
+      },
+      { label: i18n.t('screens.hosts.lastError'), value: hostError ?? undefined },
+    ]);
+
+    const build = about?.build;
+    const buildValue = build === undefined ? undefined
+      : build.version !== undefined && build.commit !== undefined
+        ? i18n.t('screens.hosts.buildValue', { version: build.version, commit: build.commit.slice(0, 7) })
+        : build.version ?? build.commit?.slice(0, 7);
+    const server = about === null ? [] : rowsOf([
+      { label: i18n.t('screens.hosts.software'), value: about.server?.name },
+      { label: i18n.t('screens.hosts.version'), value: about.server?.version },
+      { label: i18n.t('screens.hosts.build'), value: buildValue },
+      { label: i18n.t('screens.hosts.defaultFolder'), value: about.defaultDirectory === undefined ? undefined : folderOf(about.defaultDirectory) },
+      {
+        label: i18n.t('screens.hosts.activeSessions'),
+        value: about.activeSessions === undefined ? undefined
+          : i18n.t('screens.hosts.activeValue', { active: about.activeSessions, all: Object.keys(catalogue).length }),
+      },
+    ]);
+
+    const box = about?.machine;
+    const machine = box === undefined ? [] : rowsOf([
+      {
+        label: i18n.t('screens.hosts.platform'),
+        value: [box.platform, box.architecture].filter((one) => one !== undefined).join(', ') || undefined,
+      },
+      { label: i18n.t('screens.hosts.cpus'), value: box.cpus === undefined ? undefined : String(box.cpus) },
+      {
+        label: i18n.t('screens.hosts.memory'),
+        value: box.memoryBytes === undefined ? undefined : i18n.t('screens.hosts.memoryValue', { amount: (box.memoryBytes / 2 ** 30).toFixed(1) }),
+      },
+    ]);
+
+    const automationLine = (() => {
+      if (automations === null) return undefined;
+      const counted = i18n.plural(automations.length, {
+        one: i18n.t('screens.hosts.automationCount.one'),
+        other: i18n.t('screens.hosts.automationCount.other'),
+      });
+      const last = automations.flatMap((one) => one.runs.map((run) => run.createdAt)).filter((at): at is string => at !== undefined).sort().at(-1);
+      return last === undefined
+        ? i18n.t('screens.hosts.neverRan', { automations: counted })
+        : i18n.t('screens.hosts.lastRan', { automations: counted, when: since(last, now, i18n) });
+    })();
+
+    const settings = about?.settings ?? [];
+    const trusted = about?.trusted ?? [];
 
     return (
       <Panel title={i18n.t('screens.hosts.title')} flex={1}>
-        <Column gap={1} flex={1}>
+        <Column gap={0} flex={1}>
           <ConnectionBadge url={host?.url ?? ''} state={host?.state ?? 'offline'} />
-          <text content={i18n.t('screens.hosts.about')} fg="muted" wrap="word" />
-          {/* Which of the two is answering, and how to ask for the other. The
-              seam is one interface, so this is the only screen that has any
-              reason to mention that there are two implementations of it. */}
-          {host?.id === 'fake' ? (
-            <text
-              content={i18n.t('screens.hosts.fake')}
-              fg="subtle"
-              wrap="word"
-            />
-          ) : (
-            <text
-              content={i18n.t('screens.hosts.live')}
-              fg="subtle"
-              wrap="word"
-            />
-          )}
-          {agents.map((agent) => (
-            <Column key={agent.provider} gap={0}>
-              <Row gap={1}>
-                <text content={agent.displayName} bold />
-                <Badge label={agent.provider} tone="muted" />
-              </Row>
-              {agent.description ? <text content={agent.description} fg="muted" /> : null}
-              {agent.models.map((model) => (
-                <text key={model.id} content={`  ${model.displayName}  (${model.id})`} fg="subtle" />
-              ))}
+          <HostPage offset={offset} onScroll={setOffset} viewport={viewport} flex={1}>
+            <Column gap={1}>
+              {connection.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.connection')}>
+                  <KeyValue items={connection} columns={2} />
+                </HostSection>
+              ) : null}
+              {server.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.server')}>
+                  <KeyValue items={server} columns={2} />
+                </HostSection>
+              ) : null}
+              {machine.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.machine')}>
+                  <KeyValue items={machine} columns={2} />
+                </HostSection>
+              ) : null}
+              {automationLine !== undefined ? (
+                <HostSection title={i18n.t('screens.hosts.automations')}>
+                  <text content={automationLine} />
+                </HostSection>
+              ) : null}
+              {agents.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.agents')} count={agents.length}>
+                  <HostAgents agents={agents} follow={follow} />
+                </HostSection>
+              ) : null}
+              {settings.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.settings')}>
+                  {settings.map((page) => (
+                    <Column key={page.provider} gap={0}>
+                      <Row gap={1}>
+                        <text content={page.title} bold />
+                        <text content={page.provider} fg="subtle" />
+                      </Row>
+                      {page.description ? <text content={`  ${page.description}`} fg="muted" wrap="word" /> : null}
+                      {page.keys.length > 0 ? <text content={`  ${page.keys.join('  ')}`} fg="muted" wrap="word" /> : null}
+                    </Column>
+                  ))}
+                </HostSection>
+              ) : null}
+              {trusted.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.trusted')}>
+                  {trusted.map((uri) => <text key={uri} content={folderOf(uri)} />)}
+                </HostSection>
+              ) : null}
+              {terminals.length > 0 ? (
+                <HostSection title={i18n.t('screens.hosts.terminals')}>
+                  <KeyValue items={terminals.map((one) => ({
+                    label: one.title,
+                    value: one.exitCode === undefined ? i18n.t('screens.hosts.running') : i18n.t('screens.hosts.exitedCode', { code: one.exitCode }),
+                  }))} />
+                </HostSection>
+              ) : null}
             </Column>
-          ))}
+          </HostPage>
         </Column>
       </Panel>
     );
   });
+
+/** The scrolling part of the hosts page, which says where it is on screen. */
+const HostPage = defineComponent<{
+  offset: number;
+  onScroll(offset: number): void;
+  viewport: { current: { y: number; height: number } };
+  flex?: number;
+  children?: unknown;
+}>('HostPage', (props) => {
+  const at = useMeasure();
+  props.viewport.current = { y: at.y, height: at.height };
+  return (
+    <ScrollView flex={1} focusId="hosts.page" scrollbar offset={props.offset} onScroll={props.onScroll}>
+      {props.children as RenderOutput}
+    </ScrollView>
+  );
+});
+
+/** Where a model row's id joins its agent's, which no provider or model id holds. */
+const MODEL_OF = '\u0000';
+
+/**
+ * The host's agents, each opening on its models.
+ *
+ * A `Tree`: the arrows move, and `enter` or a click opens or closes an agent.
+ * The selected agent goes in the store for `n`, and the row's place on screen
+ * goes to `follow`, so the page can keep it in view.
+ */
+const HostAgents = defineComponent<{ agents: Agent[]; follow(row: number): void }>('HostAgents', (props) => {
+  const app = useApp();
+  const i18n = useI18n();
+  const at = useMeasure();
+  const [selected, setSelected] = useState<string>(props.agents[0]?.provider ?? '');
+  const [expanded, setExpanded] = useState<string[]>([]);
+
+  /**
+   * The meta of an agent's row, cut to the width its name leaves.
+   *
+   * `Tree` gives a row's name the room the meta does not take, which suits a
+   * file and its size; an agent's description can be a sentence, and then it
+   * is the name that would be cut. Two cells are the twisty and its gap, and
+   * one is the gap before the meta.
+   */
+  const fitted = (name: string, meta: string): string => {
+    const room = at.width - 2 - name.length - 1;
+    if (at.width <= 0 || meta.length <= room) return meta;
+    return room <= 1 ? '' : `${meta.slice(0, room - 1)}\u2026`;
+  };
+  const nodes = props.agents.map((agent) => ({
+    id: agent.provider,
+    label: agent.displayName,
+    meta: fitted(agent.displayName, [agent.provider, agent.description, i18n.plural(agent.models.length, {
+      one: i18n.t('screens.hosts.models.one'), other: i18n.t('screens.hosts.models.other'),
+    })].filter(Boolean).join(', ')),
+    children: agent.models.map((model) => ({ id: `${agent.provider}${MODEL_OF}${model.id}`, label: model.displayName, meta: model.id })),
+  }));
+  // The rows as the tree draws them, to find where the selected one is.
+  const rows = props.agents.flatMap((agent) => [
+    agent.provider,
+    ...(expanded.includes(agent.provider) ? agent.models.map((model) => `${agent.provider}${MODEL_OF}${model.id}`) : []),
+  ]);
+
+  useEffect(() => {
+    app.store.set(HOST_AGENT, selected.split(MODEL_OF)[0] ?? '');
+  }, [selected]);
+  // Not on the first draw: the page opens at its top, and an agents list
+  // below the fold would otherwise scroll it there before anyone moved.
+  const moved = useRef(false);
+  useEffect(() => {
+    if (!moved.current) { moved.current = true; return; }
+    const index = rows.indexOf(selected);
+    if (index >= 0) props.follow(at.y + index);
+  }, [selected, expanded.join(' ')]);
+
+  return (
+    <Tree
+      autoFocus
+      nodes={nodes}
+      selectedId={selected}
+      expandedIds={expanded}
+      onSelect={(id: string) => setSelected(id)}
+      onToggle={(id: string, open: boolean) => setExpanded(open ? [...expanded, id] : expanded.filter((one) => one !== id))}
+    />
+  );
+});

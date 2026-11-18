@@ -28,5 +28,6 @@ The first screen is [a new session](NEW-SESSION.md). `esc` goes back one screen,
 | [Chats](../subjects/CHATS.md#screen) | **Switch chat** in the palette, in a session |
 | [Terminals](../subjects/TERMINALS.md#screen) | **Show terminals** in the palette |
 | [Automations](../subjects/AUTOMATIONS.md#screen) | **Show automations** in the palette |
+| [Host](HOST.md) | **Show hosts** in the palette |
 
 Each screen names its main keys on its last row. The keys that work on every screen, and the palette, are in [Keys](KEYS.md).

@@ -1,6 +1,6 @@
 ---
 title: The hosts screen is a page with sections
-status: todo
+status: done
 depends:
   - task-01-the-host-answers-its-facts.md
 layer: "screen"
@@ -51,3 +51,5 @@ It has ahpw's sections, and a section or a row the host sent nothing for is not 
 - `npm run typecheck` and `npm test` pass.
 
 ## Resume
+
+Done. The controller gained `about()`; the terminals come from the controller's `terminals` service and the `TERMINALS` store. *Connected* shows the clock time and how long ago. The page matches mockup 01 at 110 by 40, and scrolls at 80 by 24.

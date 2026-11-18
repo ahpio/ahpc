@@ -1,5 +1,5 @@
 import type {
-  Agent, Answer, Automation, AutomationRun, Changeset, Completion, ContentRef, Customization, FileContent, PendingInput, QueuedMessage,
+  Agent, Answer, HostAbout, Automation, AutomationRun, Changeset, Completion, ContentRef, Customization, FileContent, PendingInput, QueuedMessage,
   ChangesetOperationTarget, ChangesetScope, Invoked, ChatSource, ChatState, ModelSelection, ResourceEntry, SessionConfig, SessionDetail, SessionSummary, SessionUri, TerminalRow, TerminalState,
   ToolCall, Turn,
 } from './types.js';
@@ -57,6 +57,8 @@ export interface HostConnection {
     rows: SessionSummary[];
     nextCursor?: string;
   }>;
+  /** What the host said about itself, and this connection's own facts. */
+  about(): Promise<HostAbout>;
   /** The harnesses the host advertises, and the models each offers. */
   agents(): Promise<Agent[]>;
   /**

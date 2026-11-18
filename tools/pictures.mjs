@@ -277,6 +277,7 @@ try {
   await ahpc(port, 'automation', 'run', morning);
   await sleep(2000);
   await picture(port, 'automations.svg', 'automations');
+  await picture(port, 'host.svg', 'hosts', { height: 40 });
 }
 finally {
   finish();

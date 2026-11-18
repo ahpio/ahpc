@@ -15,7 +15,7 @@ Reference: [00-screen.md](screen/00-screen.md)
 
 | Plan | Priority | Status | Requires | Blocks |
 | --- | --- | --- | --- | --- |
-| [20261117-2247 - The hosts screen scrolls and shows the host](screen/20261117-2247-the-hosts-screen-shows-the-host/plan.md) | medium | planned | - | - |
+| [20261117-2247 - The hosts screen scrolls and shows the host](screen/20261117-2247-the-hosts-screen-shows-the-host/plan.md) | medium | built 2026-11-17 ([implemented.md](screen/20261117-2247-the-hosts-screen-shows-the-host/implemented.md)) | - | - |
 | [01 - Telling somebody the version is old](screen/01-update-check/plan.md) | medium | built 2026-09-18 ([implemented.md](screen/01-update-check/implemented.md)) | ahpd daemon/01 for the shared comparison table | - |
 | [02 - Three corrections to what a chat turn draws](screen/02-turn-details/plan.md) | high | built 2026-09-20 ([implemented.md](screen/02-turn-details/implemented.md)) | - | - |
 | [03 - The model a queued or reopened turn runs on](screen/03-model-continuity/plan.md) | medium | built 2026-09-30 ([implemented.md](screen/03-model-continuity/implemented.md)) | - | - |
