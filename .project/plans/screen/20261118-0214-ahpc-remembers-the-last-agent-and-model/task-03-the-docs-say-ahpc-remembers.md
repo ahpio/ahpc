@@ -1,6 +1,6 @@
 ---
 title: The docs say ahpc remembers
-status: todo
+status: done
 depends:
   - task-02-a-new-session-starts-from-it.md
 layer: "docs"

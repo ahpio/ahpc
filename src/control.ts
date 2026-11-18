@@ -43,6 +43,7 @@ import {
   writeSessions, writeStatus,
 } from './state.js';
 import type { PullRequestAsk } from './state.js';
+import { keepChoice, readChoice } from './choices.js';
 
 /**
  * The control side: what the application can do, and what it does when the
@@ -339,6 +340,8 @@ export function createController(
   app: TextUIApp,
   host: HostConnection & { pump?(): boolean },
   bindings?: Record<string, string | null>,
+  /** Keep and take back the last agent, model and options per host. */
+  keepsChoices = false,
 ): Controller & Disposable {
   const bag = createBag();
   // The client's own copy of the conversation, kept so a delta can be applied
@@ -785,9 +788,29 @@ export function createController(
     return found !== undefined && sources.get(found)?.[kind] === true;
   };
   /** The first agent the host lists, as the provider, while none is chosen yet. */
+  /**
+   * The agent a new session starts with, while none is chosen yet.
+   *
+   * The one last used on this host when it still lists it, and its first agent
+   * otherwise. Then the model kept with it, when that agent still lists it,
+   * and each kept option the model still offers with the same value. Nothing
+   * is taken once an agent is chosen: a chip, the palette and `n` all win.
+   */
   const first = (found: readonly Agent[]): void => {
-    const head = found[0];
-    if (head !== undefined && !app.store.get<string>(PROVIDER)) app.store.set(PROVIDER, head.provider);
+    if (app.store.get<string>(PROVIDER)) return;
+    const kept = keepsChoices ? readChoice(host.url) : undefined;
+    const agent = found.find((one) => one.provider === kept?.provider) ?? found[0];
+    if (agent === undefined) return;
+    app.store.set(PROVIDER, agent.provider);
+    if (kept === undefined || agent.provider !== kept.provider) return;
+    const model = agent.models.find((one) => one.id === kept.model);
+    if (model === undefined) return;
+    app.store.set(MODEL, model.id);
+    const offered = model.options ?? [];
+    offerModel(offered);
+    app.store.set(MODEL_CONFIG, Object.fromEntries(Object.entries(kept.modelConfig ?? {}).filter(([key, value]) => (
+      offered.some((property) => property.key === key && property.values.some((one) => one.value === value))
+    ))));
   };
   void host.agents().then((found) => {
     first(found);
@@ -1182,6 +1205,18 @@ export function createController(
         ...(workingDirectory ? { workingDirectory } : {}),
         ...(Object.keys(config).length > 0 ? { config } : {}),
       }));
+      // What this session started with, for the next one on this host. The
+      // model and its options ride on the first message, and are the ones the
+      // control row holds now.
+      if (keepsChoices) {
+        const model = app.store.get<string>(MODEL) ?? '';
+        const options = app.store.get<Record<string, string>>(MODEL_CONFIG) ?? {};
+        keepChoice(host.url, {
+          provider,
+          ...(model !== '' ? { model } : {}),
+          ...(Object.keys(options).length > 0 ? { modelConfig: options } : {}),
+        });
+      }
       await controller.refresh();
       controller.open(uri);
       // The provider is lazy: a session sits in `creating` and emits nothing

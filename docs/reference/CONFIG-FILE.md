@@ -15,5 +15,6 @@
 | `shell` | string | `--shell` | The screen layout |
 | `keys` | object | | [Keys](../start/CONFIGURE.md#keys): a chord to a command id, or `null` |
 | `updateCheck` | boolean | `--no-update-check` | `false` never asks npm for a newer version |
+| `rememberChoices` | boolean | `--no-remember` | `false` starts each new session at the host's first agent and default model. See [New session](../use/NEW-SESSION.md#the-agent) |
 | `boodInline` | boolean | | Show the creature in place of the header's name, in an open session |
 | `boodFloat` | boolean | `--bood` | Let the creature move over the whole screen |

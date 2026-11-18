@@ -1,6 +1,6 @@
 ---
 title: ahpc keeps the last choice per host
-status: todo
+status: done
 depends: []
 layer: "screen"
 refs:

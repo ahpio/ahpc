@@ -89,6 +89,12 @@ export interface Config {
    * would rather not type it every time.
    */
   updateCheck?: boolean;
+  /**
+   * Start a new session with the agent, model and model options last used on
+   * the same host. On when absent; `false` neither reads nor writes
+   * `choices.json`. The same as `--no-remember`.
+   */
+  rememberChoices?: boolean;
 }
 
 /**

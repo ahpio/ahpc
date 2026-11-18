@@ -126,6 +126,8 @@ interface Options {
   wire?: string;
   /** Ask npm, in the background, whether a newer version exists. */
   updateCheck: boolean;
+  /** Start a new session with the last agent, model and options on the host. */
+  remember: boolean;
   help: boolean;
 }
 
@@ -163,6 +165,11 @@ Seeing the wire
   --wire <file>         Append every frame, both directions, as JSON lines:
                         { at, from, peer, frame }. AHPC_RECORD=<file> is
                         the same thing from a shell.
+
+Remembering
+  --no-remember         Start each new session at the host's first agent and
+                        default model, instead of the last ones used on that
+                        host. rememberChoices: false in the file says the same.
 
 Knowing when it is old
   --no-update-check     Never ask npm whether a newer version exists.
@@ -220,6 +227,7 @@ export function parse(argv: string[]): Options {
     boodInline: false,
     boodFloat: false,
     updateCheck: true,
+    remember: true,
     approve: false,
     answer: false,
     help: false,
@@ -262,6 +270,7 @@ export function parse(argv: string[]): Options {
       case '--publish-writable': options.publishWritable = true; break;
       case '--wire': options.wire = String(argv[++i]); break;
       case '--no-update-check': options.updateCheck = false; break;
+      case '--no-remember': options.remember = false; break;
       case '--help': case '-h': options.help = true; break;
       // A flag nobody reads is a flag nobody can rely on: an unknown one is
       // said so rather than silently doing what the defaults would have done.
@@ -484,6 +493,7 @@ export async function tui(argv: string[]): Promise<void> {
   if (file.boodFloat !== undefined && !argv.includes('--bood')) options.boodFloat = file.boodFloat;
   if (file.keys) options.keys = file.keys;
   if (file.updateCheck === false && !argv.includes('--no-update-check')) options.updateCheck = false;
+  if (file.rememberChoices === false) options.remember = false;
   /*
    * What the host is told this client trusts: the file's list, and the folder
    * this run works in when it also said `--trust`. A workspace picked on the
@@ -516,6 +526,7 @@ export async function tui(argv: string[]): Promise<void> {
         host, workspace: workspaceFor(options),
         boodInline: options.boodInline, boodFloat: options.boodFloat,
         ...(options.keys ? { keys: options.keys } : {}),
+        remember: options.remember,
       });
       booted.commands.register({
         id: 'app.quit',

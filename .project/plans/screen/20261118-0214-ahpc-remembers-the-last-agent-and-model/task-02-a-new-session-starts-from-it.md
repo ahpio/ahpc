@@ -1,6 +1,6 @@
 ---
 title: A new session starts from the last choice
-status: todo
+status: done
 depends:
   - task-01-ahpc-keeps-the-last-choice.md
 layer: "screen"

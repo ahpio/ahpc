@@ -546,6 +546,12 @@ export interface ChatOptions {
   /** The host. Omit for the scripted one, which is what the tests use. */
   host?: HostConnection & { pump?(): boolean };
   /**
+   * Start a new session with the agent, model and options last used on this
+   * host, and keep them when a session starts. Off unless asked for, so a test
+   * never reads or writes a person's `choices.json`.
+   */
+  remember?: boolean;
+  /**
    * Where a new session works, before anybody chooses otherwise.
    *
    * A path on the **host**, which is not this machine unless the host happens
@@ -573,7 +579,7 @@ export function registerChat(app: TextUIApp, options: ChatOptions = {}): Disposa
   if (options.builtins !== false) bag.add(registerBuiltins(app));
 
   const host = options.host ?? fakeHost();
-  const controller = createController(app, host, options.keys);
+  const controller = createController(app, host, options.keys, options.remember === true);
   app.store.set(WORKSPACE, options.workspace ?? process.cwd());
   app.store.set(SPLIT_AT, options.splitAt ?? SPLIT_DEFAULT);
   // Once, here, rather than per mount: two surfaces drawing two different
