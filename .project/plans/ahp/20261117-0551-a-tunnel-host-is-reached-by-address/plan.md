@@ -112,7 +112,7 @@ The files read and the patterns to reuse are the `refs` in the frontmatter, each
 ## Resume state
 
 - **Done so far:** tasks 01 to 04, as [implemented.md](implemented.md) says.
-- **Next action:** review, then the check by hand in [a-tunnel-host-is-reached-by-address.md](../../../pending/a-tunnel-host-is-reached-by-address.md).
+- **Next action:** none; the check by hand passed on 2026-11-18.
 - **Open questions:** none; every row in *Answers* is the user's or defaulted, and the user may erase a defaulted one.
 - **Watch out for:** the derived token is not built in this plan; it belongs to [the sign-in plan](../20261117-0551-ahpc-signs-in-to-dev-tunnels/plan.md).
 

@@ -30,7 +30,9 @@ A refused connect token ends the reconnect loop, with a sentence that says how t
 - By hand: `--host tunnel:l3rs99qw` prints the `noCluster` sentence and exits 1.
 - By hand: `--host tunnel:l3rs99qw.usw2` with no token prints the `noOwnToken` sentence and exits 1.
 - By hand: with a token, ahpc reached `l3rs99qw-31546.usw2.devtunnels.ms`, which answered 404 for a tunnel that does not exist.
-- Not run: a real tunnel. The check waits in [a-tunnel-host-is-reached-by-address.md](../../../pending/a-tunnel-host-is-reached-by-address.md).
+- By hand on 2026-11-18, through a real Dev Tunnel on the Linux machine, every step passed.
+  An anonymous tunnel reached the host with its own token, and a private one asked for a sign-in.
+  A connect token got in, and the screen came back after the tunnel restarted, by `reconnect`.
 
 ## Departures from the plan
 
