@@ -2,6 +2,7 @@ import { appendFileSync } from 'node:fs';
 import { socketHeld } from '../exit.js';
 import { hostAbout } from './about.js';
 import { randomUUID } from 'node:crypto';
+import { version } from '../version.js';
 import { openChannels } from './channels.js';
 import type { Consumer } from './channels.js';
 import { publish } from './publish.js';
@@ -244,6 +245,12 @@ function isRpcRefusal(error: unknown): boolean {
 const VERSIONS = ['1.1.0', '1.0.0', '0.10.0', '0.9.0', '0.8.0', '0.7.0'];
 
 const ROOT = 'ahp-root://';
+
+/**
+ * What this client is, as `initialize` tells the host: the name, the title a
+ * host's client list shows, and this build's version.
+ */
+const CLIENT_INFO = { name: 'ahpc', title: 'ahpc', version: version() };
 const AUTOMATIONS = 'ahp-automations://';
 
 // --------------------------------------------------------------- the package
@@ -263,13 +270,6 @@ interface Subscription extends AsyncIterable<{ type: string; params?: unknown }>
 interface Client {
   connect(): void;
   shutdown(): Promise<void>;
-  initialize(args: {
-    clientId: string;
-    protocolVersions: readonly string[];
-    initialSubscriptions?: readonly string[];
-    clientInfo?: { name: string; version?: string };
-    locale?: string;
-  }): Promise<unknown>;
   /**
    * Take up a dropped connection where it left off.
    *
@@ -1646,7 +1646,7 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
    * answers by refusing - so the identity has to outlive the connection it
    * was first used on.
    */
-  const clientId = options.clientId ?? `ahpc-${randomUUID().slice(0, 8)}`;
+  const clientId = options.clientId ?? `ahpc-${randomUUID()}`;
   const openTransport = options.connect ?? await socketOpener(options);
   const wiring = { ...(options.wire !== undefined ? { file: options.wire } : {}), peer: options.url };
   const backoff = options.backoff ?? BACKOFF;
@@ -1774,13 +1774,21 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
   /** Channels the handshake opened, with the state it answered. */
   const adopted = new Map<string, Bag | null>();
 
-  const hello = bag(await client.initialize({
+  /*
+   * The `initialize` request, sent as the protocol defines it. The package's
+   * own `initialize` builds its params from the fields it knows and drops
+   * `clientInfo`, so the host would never learn what this client is.
+   */
+  const greet = (to: Client, subscriptions: readonly string[]): Promise<Record<string, unknown>> => to.request('initialize', {
     clientId,
     protocolVersions: VERSIONS,
-    clientInfo: { name: 'ahpc' },
-    initialSubscriptions: [ROOT],
+    clientInfo: CLIENT_INFO,
+    initialSubscriptions: [...subscriptions],
     ...(locale() !== undefined ? { locale: locale() as string } : {}),
-  }));
+    channel: ROOT,
+  });
+
+  const hello = bag(await greet(client, [ROOT]));
   for (const snapshot of list(hello.snapshots)) mirror.applySnapshot(snapshot);
   /** The `initialize` answer the connection last came up on, for `about`. */
   let greeting: Bag = hello;
@@ -2071,12 +2079,7 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
             // cannot be resumed is started again - retrying `reconnect` at a
             // host that has forgotten us is a loop with no end in it.
             if (!isRpcRefusal(error)) throw error;
-            greeting = bag(await fresh.initialize({
-              clientId,
-              protocolVersions: VERSIONS,
-              clientInfo: { name: 'ahpc' },
-              initialSubscriptions: held,
-            }));
+            greeting = bag(await greet(fresh, held));
           }
 
           client = fresh;

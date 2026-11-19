@@ -1,6 +1,6 @@
 ---
 title: Initialize names ahpc
-status: todo
+status: done
 depends: []
 layer: "ahp"
 refs:
@@ -41,4 +41,9 @@ A new client id is `ahpc-` and a whole UUID.
 - On the test daemon, an ahpc row in ahpw's Clients list reads "ahpc" with its version.
 
 ## Resume
+
+Built on 2026-11-19. `greet()` in `live.ts` sends both `initialize` requests through `client.request`.
+Its `channel` comes last, because `test/conformance.test.ts` refuses a spread after it.
+The `initialize` member left the local `Client` type, which nothing calls now.
+The suite passed: 994 cases.
 
