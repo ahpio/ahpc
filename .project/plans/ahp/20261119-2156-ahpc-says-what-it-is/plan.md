@@ -1,7 +1,7 @@
 ---
 title: ahpc says what it is
 domain: ahp
-status: planned
+status: active
 priority: medium
 created: 2026-11-19
 revalidated: 2026-11-19
@@ -60,7 +60,7 @@ liveHost() -> clientId -> initialize request -> ahpd keeps clientInfo -> ahpw's 
 
 | Task | Status | Depends on |
 | --- | --- | --- |
-| [01 - initialize names ahpc](task-01-initialize-names-ahpc.md) | todo | - |
+| [01 - initialize names ahpc](task-01-initialize-names-ahpc.md) | done | - |
 
 ## Risks and tradeoffs
 
@@ -68,8 +68,8 @@ liveHost() -> clientId -> initialize request -> ahpd keeps clientInfo -> ahpw's 
 
 ## Resume state
 
-- **Done so far:** nothing.
-- **Next action:** [task-01-initialize-names-ahpc.md](task-01-initialize-names-ahpc.md).
+- **Done so far:** task 01, built on 2026-11-19.
+- **Next action:** the PR, then Softov's check on the test daemon, then `implemented.md`.
 - **Open questions:** none.
 - **Watch out for:** `client.initialize` drops `clientInfo`; never send it through that call.
 
