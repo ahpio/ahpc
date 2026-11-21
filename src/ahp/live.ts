@@ -730,6 +730,7 @@ function toolCall(value: unknown): ToolCall {
 
   const status = TOOL_STATUSES[str(call.status) ?? ''] ?? 'running';
   const progress = status === 'running' ? plain(bag(call._meta).progressMessage) : undefined;
+  const movable = status === 'running' && bag(call._meta)['ahpd.backgroundToolCall'] === true;
   // A call paused on a sign-in carries the challenge the host sent. The
   // resource URL is what `authenticate` names, and the rest is what the host
   // said about why it is needed.
@@ -759,6 +760,7 @@ function toolCall(value: unknown): ToolCall {
     ...(plain(call.invocationMessage) ? { invocation: plain(call.invocationMessage) as string } : {}),
     ...(plain(call.intention) ? { intention: plain(call.intention) as string } : {}),
     ...(progress !== undefined ? { progress } : {}),
+    ...(movable ? { movable: true } : {}),
     ...(plain(call.pastTenseMessage) ? { outcome: plain(call.pastTenseMessage) as string } : {}),
     ...(text ? { output: text } : {}),
     ...(files.length > 0 ? { files } : {}),
@@ -3306,6 +3308,20 @@ export async function liveHost(options: LiveHostOptions): Promise<HostConnection
     },
 
     unqueue: (uri, id) => answered(uri, { type: 'chat/pendingMessageRemoved', kind: 'queued', id }),
+
+    /*
+     * ahpd moves a running call to the background and answers whether it did.
+     * The call is named by its id, and the chat is the session's own, as
+     * `stopTurn` finds it: a call in a subagent's chat is moved from there.
+     */
+    moveToBackground: (uri, toolCallId) => (async () => {
+      const chatUri = await chatOf(uri);
+      if (!chatUri) {
+        return { backgrounded: false, refused: channels.refusal(uri) ?? 'This session has no chat to move a call in.' };
+      }
+      const answer = bag(await client.request('x-ahpd/backgroundToolCall', { chat: chatUri, toolCallId }));
+      return { backgrounded: answer.backgrounded === true };
+    })().catch((error: unknown) => ({ backgrounded: false, refused: reason(error) })),
 
     stopTurn: (uri) => (async () => {
       const chatUri = await chatOf(uri);

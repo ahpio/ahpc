@@ -156,6 +156,11 @@ export interface ToolCall {
    * a state the call is no longer in.
    */
   progress?: string;
+  /**
+   * ahpd can move this running call to the background, from
+   * `_meta['ahpd.backgroundToolCall']`. Set only while it is running.
+   */
+  movable?: boolean;
   /** What it did, past tense. */
   outcome?: string;
   /** What came back. */

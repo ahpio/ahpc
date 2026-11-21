@@ -2096,6 +2096,9 @@ export function fakeHost(): FakeHost {
       return {};
     },
 
+    // The fake runs no call that can move, so there is nothing to answer for.
+    moveToBackground: async () => ({ backgrounded: false }),
+
     stopTurn: async (uri) => {
       const running = active.has(uri);
       stop(uri);

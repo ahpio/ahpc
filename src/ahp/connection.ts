@@ -370,6 +370,13 @@ export interface HostConnection {
    */
   stopTurn(uri: SessionUri): Promise<{ cancelled: boolean; refused?: string }>;
   /**
+   * Move a running call to the background, as `x-ahpd/backgroundToolCall` does.
+   *
+   * Answers whether the call moved. `refused` says why it could not be asked,
+   * and a call that already answered is `backgrounded: false`, not a refusal.
+   */
+  moveToBackground(uri: SessionUri, toolCallId: string): Promise<{ backgrounded: boolean; refused?: string }>;
+  /**
    * Say it *after* the turn that is running.
    *
    * Not `say` with a wait in front of it. The queue is the host's - it starts

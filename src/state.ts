@@ -596,6 +596,18 @@ export function activeTurn(store: ReactiveStore): Turn | null {
   return turns(store).find((turn) => turn.state === 'running') ?? null;
 }
 
+/**
+ * The id of the running call in a turn that ahpd can move to the background,
+ * or null when none can. The last one is the call the person is looking at.
+ */
+export function movableCall(turn: Turn | null): string | null {
+  let found: string | null = null;
+  for (const part of turn?.parts ?? []) {
+    if (part.kind === 'toolCall' && part.call.movable === true && part.call.status === 'running') found = part.call.id;
+  }
+  return found;
+}
+
 export function queue(store: ReactiveStore): QueuedMessage[] {
   return store.get<QueuedMessage[]>(QUEUE) ?? [];
 }
