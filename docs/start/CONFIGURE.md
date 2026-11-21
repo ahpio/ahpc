@@ -54,6 +54,12 @@ A workspace you pick on the screen is not trusted until the config file lists it
 
 `f1` on the screen shows the keys that work where you are.
 
+`ctrl+b` moves the running call of a chat to the background, as in Claude Code. Inside tmux it is tmux's own prefix and never reaches ahpc, so move it to a chord tmux leaves alone:
+
+```json
+{ "keys": { "ctrl+b": null, "alt+b": "turn.background" } }
+```
+
 ## Theme, language and layout
 
 | Key | Flag | |
