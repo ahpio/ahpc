@@ -39,7 +39,7 @@ import {
   CHANGES as CHANGES_AT_PATH, CHANGE_AT, CHANGE_ROW, CHANGE_SCOPES, FILES_AT, FILES_OPEN,
   OPEN, OPEN_FILE, PROVIDER, PULL_REQUEST, PULL_REQUEST_LAYER, TARGET_LAYER, MARKDOWN, QUEUE, QUIT_ARMED, QUIT_WINDOW_MS, RUNNING, SCREEN, SELECTED, SETTINGS, SIDEBAR,
   SPLIT_AT, SPLIT_DEFAULT, TURNS, WORKSPACE,
-  applyEvent, inputRefused, openSession, pendingInput, queue, reportHostError, sendingInput, sessions, shownScope, turns,
+  activeTurn, applyEvent, inputRefused, movableCall, openSession, pendingInput, queue, reportHostError, sendingInput, sessions, shownScope, turns,
   writeSessions, writeStatus,
 } from './state.js';
 import type { PullRequestAsk } from './state.js';
@@ -60,7 +60,7 @@ import { keepChoice, readChoice } from './choices.js';
 
 /** An action the host can refuse, as the status row names it. */
 export type RefusedAction =
-  | 'open' | 'markRead' | 'markUnread' | 'queue' | 'unqueue' | 'stop'
+  | 'open' | 'markRead' | 'markUnread' | 'queue' | 'unqueue' | 'stop' | 'background'
   | 'allow' | 'deny' | 'answer' | 'decline' | 'archive' | 'unarchive'
   | 'newChat' | 'closeChat' | 'dispose' | 'create' | 'listSessions'
   | 'readSession' | 'listCommands' | 'listAgents' | 'readSettings'
@@ -74,6 +74,7 @@ const ACTION_KEYS: Record<RefusedAction, string> = {
   queue: 'commands.action.queue',
   unqueue: 'commands.action.unqueue',
   stop: 'commands.action.stop',
+  background: 'commands.action.background',
   allow: 'commands.action.allow',
   deny: 'commands.action.deny',
   answer: 'commands.action.answer',
@@ -120,6 +121,8 @@ export interface Controller {
   /** Take a queued message back, while it is still waiting. */
   unqueue(id: string): void;
   stop(): void;
+  /** Move the running call the person is looking at to the background. */
+  background(): void;
   approve(optionId?: string): void;
   deny(): void;
   answer(answers: Record<string, Answer>, accepted?: boolean): void;
@@ -1110,6 +1113,16 @@ export function createController(
     stop() {
       const uri = app.store.get<SessionUri>(OPEN);
       if (uri) told(host.stopTurn(uri), { action: 'stop', session: uri });
+    },
+
+    /*
+     * The running call the person is looking at moves to the background. The
+     * turn goes on without its answer, and the work shows in the session's list.
+     */
+    background() {
+      const uri = app.store.get<SessionUri>(OPEN);
+      const id = movableCall(activeTurn(app.store));
+      if (uri && id !== null) told(host.moveToBackground(uri, id), { action: 'background', session: uri });
     },
 
     /*
@@ -2962,6 +2975,16 @@ function commands(
       run: () => controller.stop(),
     },
     {
+      id: 'turn.background',
+      title: app.i18n.t('command.turn.background.title'),
+      category: app.i18n.t('category.chat'),
+      description: app.i18n.t('command.turn.background.description'),
+      slots: ['palette'],
+      // A call can only move while the turn runs and the call has not answered.
+      when: `${SCREEN} == 'chat' && ${RUNNING}`,
+      run: () => controller.background(),
+    },
+    {
       id: 'tool.approve',
       title: app.i18n.t('command.tool.approve.title'),
       category: app.i18n.t('category.chat'),
@@ -3281,6 +3304,8 @@ function shipped(i18n: TextUIApp['i18n']): Binding[] {
     // declines to run - so a `when` that lives only on the command swallows
     // `ctrl+c` and it never reaches the one below that closes the application.
     { keys: 'ctrl+c', commandId: 'turn.stop', when: `${SCREEN} == 'chat' && ${RUNNING}` },
+    // Claude Code's key for the same move. Configurable later in ahpc's config.
+    { keys: 'ctrl+b', commandId: 'turn.background', when: `${SCREEN} == 'chat' && ${RUNNING}` },
     /*
      * On the terminal screen, `ctrl+c` belongs to the shell.
      *
